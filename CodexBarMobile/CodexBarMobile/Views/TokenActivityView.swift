@@ -11,6 +11,7 @@ struct TokenActivitySection: View {
     @AppStorage(MobileSettingsKeys.cwlEnabled) private var useLedger = MobileSettingsDefaults.cwlEnabled
     @AppStorage(MobileSettingsKeys.cwlBlobSeedClearedAt) private var clearedAt: Double = 0
     @State private var series: [TokenActivitySeries] = []
+    @State private var overviewDay: String?
     @State private var failed = false
     @State private var loadedScope: String?
     private var scope: String {
@@ -33,38 +34,56 @@ struct TokenActivitySection: View {
         VStack(alignment: .leading, spacing: 0) {
             if self.loadedScope == self.scope, !self.series.isEmpty {
                 if self.isOverview {
-                    NavigationLink {
-                        ScrollView {
-                            TokenActivityCharts(
-                                series: self.series,
-                                isOverview: true,
-                                referenceDate: self.referenceDate,
-                                failed: self.failed)
-                                .padding()
-                        }
-                        .navigationTitle(String(localized: "Token Activity"))
-                        .navigationBarTitleDisplayMode(.inline)
-                    } label: {
-                        HStack(spacing: 12) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(String(localized: "Recorded tokens")).font(.headline)
-                                Text(TokenActivity.total(self.series).text)
-                                    .font(.title2.bold().monospacedDigit())
-                                    .accessibilityIdentifier("token-overview-total")
-                                Text(String(localized: "Past year · All providers"))
-                                    .font(.caption).foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 12) {
+                        NavigationLink {
+                            ScrollView {
+                                TokenActivityCharts(
+                                    series: self.series,
+                                    isOverview: true,
+                                    referenceDate: self.referenceDate,
+                                    failed: self.failed)
+                                    .padding()
                             }
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.body.weight(.semibold)).foregroundStyle(.secondary)
-                                .accessibilityHidden(true)
+                            .navigationTitle(String(localized: "Token Activity"))
+                            .navigationBarTitleDisplayMode(.inline)
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text(String(localized: "Daily Tokens Overview")).font(.headline)
+                                    Text(TokenActivity.total(self.series).text)
+                                        .font(.title2.bold().monospacedDigit())
+                                        .accessibilityIdentifier("token-overview-total")
+                                    Text(String(localized: "Past year · All providers"))
+                                        .font(.caption).foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(.secondary).accessibilityHidden(true)
+                            }
+                            .foregroundStyle(.primary)
+                            .contentShape(Rectangle())
                         }
-                        .foregroundStyle(.primary)
-                        .padding(16)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("token-overview-link")
+                        ScrollView(.horizontal) {
+                            TokenActivityGrid(
+                                series: self.series,
+                                color: .blue,
+                                label: String(localized: "Daily Tokens Overview"),
+                                referenceDate: self.referenceDate,
+                                selectedDay: self.$overviewDay)
+                        }
+                        .defaultScrollAnchor(.trailing)
+                        .accessibilityIdentifier("token-overview-heatmap")
+                        if let overviewDay {
+                            Text(overviewDay + " · " + TokenActivity.total(self.series, dayKey: overviewDay).text)
+                                .font(.subheadline.monospacedDigit())
+                        }
+                        Text(String(localized: "Colors show relative daily activity over the past year."))
+                            .font(.caption2).foregroundStyle(.secondary)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("token-overview-link")
+                    .padding(16)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
                 } else {
                     TokenActivityCharts(
                         series: self.series,
@@ -106,15 +125,8 @@ private struct TokenActivityCharts: View {
     let isOverview: Bool
     let referenceDate: Date
     let failed: Bool
-    @State private var showsAllProviders = false
     @State private var selectedDate = Calendar.current.startOfDay(for: Date())
     @State private var hasSelection = false
-    @ScaledMetric(relativeTo: .caption2) private var calendarLabelHeight: CGFloat = 16
-
-    private var gridHeight: CGFloat {
-        166 + 2 * self.calendarLabelHeight
-    }
-
     private var selectedDay: String? {
         self.hasSelection ? TokenActivity.dayKey(self.selectedDate, calendar: Calendar(identifier: .gregorian)) : nil
     }
@@ -150,47 +162,31 @@ private struct TokenActivityCharts: View {
                 .font(.caption).foregroundStyle(.secondary)
             Text(String(localized: "Recorded tokens") + ": " + TokenActivity.total(self.series).text)
                 .font(.subheadline.monospacedDigit())
-            ScrollViewReader { proxy in
-                HStack(alignment: .top, spacing: 8) {
+            ForEach(self.series) { item in
+                VStack(alignment: .leading, spacing: 8) {
                     if self.isOverview {
-                        VStack(alignment: .leading, spacing: 16) {
-                            ForEach(self.showsAllProviders ? self
-                                .series : Array(self.series.prefix(2)))
-                            { item in
-                                Text(self.title(for: item))
-                                    .font(.caption.bold()).lineLimit(4)
-                                    .foregroundStyle(ProviderColorPalette.color(for: item.provider))
-                                    .frame(width: 60, height: self.gridHeight, alignment: .topLeading)
-                            }
-                        }
+                        Text(self.title(for: item))
+                            .font(.title3.bold())
+                            .foregroundStyle(ProviderColorPalette.color(for: item.provider))
                     }
-                    ScrollView(.horizontal) {
-                        VStack(alignment: .leading, spacing: 16) {
-                            ForEach(self.showsAllProviders ? self
-                                .series : Array(self.series.prefix(2)))
-                            { item in
-                                TokenActivityGrid(
-                                    series: item,
-                                    referenceDate: self.referenceDate,
-                                    selectedDay: self.daySelection)
-                            }
+                    ScrollViewReader { proxy in
+                        ScrollView(.horizontal) {
+                            TokenActivityGrid(
+                                series: [item],
+                                color: ProviderColorPalette.color(for: item.provider),
+                                label: self.title(for: item),
+                                referenceDate: self.referenceDate,
+                                selectedDay: self.daySelection)
+                                .id(item.id)
                         }
-                        .id("latest")
+                        .defaultScrollAnchor(.trailing)
+                        Button(String(localized: "Back to today")) {
+                            proxy.scrollTo(item.id, anchor: .trailing)
+                        }.font(.caption)
                     }
-                    .defaultScrollAnchor(.trailing)
                 }
-                Button(String(localized: "Back to today")) { proxy.scrollTo("latest", anchor: .trailing) }
-                    .font(.caption)
             }
-            if self.series.count > 2 {
-                Button(self
-                    .showsAllProviders ? String(localized: "Show fewer providers") :
-                    String(localized: "Show all providers"))
-                {
-                    self.showsAllProviders.toggle()
-                }.font(.caption)
-            }
-            Text(String(localized: "Color intensity: <100K · <1M · <10M · 10M+ tokens"))
+            Text(String(localized: "Colors show relative daily activity over the past year."))
                 .font(.caption2).foregroundStyle(.secondary)
             DatePicker(
                 String(localized: "Date"),
@@ -229,12 +225,14 @@ private struct TokenActivityCharts: View {
 }
 
 private struct TokenActivityGrid: View {
-    let series: TokenActivitySeries
+    let series: [TokenActivitySeries]
+    let color: Color
+    let label: String
     let referenceDate: Date
     @Binding var selectedDay: String?
     @ScaledMetric(relativeTo: .caption2) private var calendarLabelHeight: CGFloat = 16
     private var gridHeight: CGFloat {
-        166 + 2 * self.calendarLabelHeight
+        110 + 2 * self.calendarLabelHeight
     }
 
     private var calendar: Calendar {
@@ -252,21 +250,22 @@ private struct TokenActivityGrid: View {
 
     var body: some View {
         let gridDates = self.dates
-        let points = Dictionary(series.days.map { ($0.dayKey, $0) }, uniquingKeysWith: { first, _ in first })
+        let points = TokenActivity.dailyTotals(self.series)
+        let scale = TokenActivityColorScale(values: points.values.compactMap(\.value))
         VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 4) {
+            HStack(spacing: 3) {
                 ForEach(Array(stride(from: 0, to: gridDates.count, by: 7)), id: \.self) { index in
                     let date = gridDates[index]
                     Text(self.calendar.component(.day, from: date) <= 7 ? date
                         .formatted(.dateTime.month(.abbreviated)) : "")
                         .font(.caption2).fixedSize().frame(
-                            width: 18, alignment: index >= gridDates.count - 21 ? .trailing : .leading)
+                            width: 12, alignment: index >= gridDates.count - 21 ? .trailing : .leading)
                 }
             }
-            LazyHGrid(rows: Array(repeating: GridItem(.fixed(18), spacing: 4), count: 7), spacing: 4) {
+            LazyHGrid(rows: Array(repeating: GridItem(.fixed(12), spacing: 3), count: 7), spacing: 3) {
                 ForEach(gridDates, id: \.self) { date in
                     let key = TokenActivity.dayKey(date, calendar: self.calendar)
-                    self.cell(key: key, date: date, point: points[key])
+                    self.cell(key: key, date: date, total: points[key], scale: scale)
                 }
             }
             HStack {
@@ -280,31 +279,35 @@ private struct TokenActivityGrid: View {
         .frame(height: self.gridHeight, alignment: .top)
     }
 
-    private func cell(key: String, date: Date, point: SyncDailyPoint?) -> some View {
-        let count = TokenActivity.recordedTokens(point, series: self.series)
+    private func cell(
+        key: String,
+        date: Date,
+        total: TokenActivityTotal?,
+        scale: TokenActivityColorScale) -> some View
+    {
+        let count = total?.value
         let padding = !TokenActivity.window(referenceDate: self.referenceDate, calendar: self.calendar).contains(date)
         let fill: Color = count.map {
             $0 == 0 ? Color.secondary.opacity(0.1) :
-                ProviderColorPalette.color(for: self.series.provider).opacity(TokenActivity.intensity($0))
+                self.color.opacity(scale.intensity($0))
         } ?? .clear
-        let unknown = point?.tokenCountIsKnown == false || count == nil
+        let unknown = total?.isLowerBound == true || count == nil
         let shape = RoundedRectangle(cornerRadius: 3).fill(fill)
             .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(
                 Color.secondary.opacity(unknown ? 0.25 : 0),
                 style: StrokeStyle(lineWidth: 1, dash: [2])))
             .overlay(RoundedRectangle(cornerRadius: 3).stroke(
                 self.selectedDay == key ? Color.primary : .clear, lineWidth: 2))
-            .frame(width: 18, height: 18)
+            .frame(width: 12, height: 12)
         return shape.opacity(padding ? 0 : 1)
             .allowsHitTesting(!padding)
             .contentShape(Rectangle())
             .onTapGesture { if !padding { self.selectedDay = key } }
+            .onLongPressGesture { if !padding { self.selectedDay = key } }
             .accessibilityAddTraits(.isButton)
             .accessibilityAction { if !padding { self.selectedDay = key } }
             .accessibilityHidden(padding)
             .accessibilityIdentifier("token-day-" + key)
-            .accessibilityLabel(key + ", " + self.series.provider.providerName + ", " + TokenActivity.tokenText(
-                point,
-                series: self.series))
+            .accessibilityLabel(key + ", " + self.label + ", " + (total?.text ?? String(localized: "Unavailable")))
     }
 }

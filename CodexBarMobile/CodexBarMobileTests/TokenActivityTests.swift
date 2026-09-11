@@ -6,6 +6,16 @@ import Testing
 
 @Suite("Token Activity data semantics")
 struct TokenActivityTests {
+    @Test func `High daily usage retains distinct colors despite a single extreme outlier`() {
+        let values = [20, 30, 40, 50, 60, 70, 80, 9000].map { $0 * 1_000_000 }
+        let scale = TokenActivityColorScale(values: values)
+        #expect(Set(values.map(scale.intensity)).count == 4)
+        #expect(scale.intensity(0) == 0)
+        #expect(scale.intensity(20_000_000) < scale.intensity(80_000_000))
+        #expect(TokenActivityColorScale(values: [0, 0]).intensity(0) == 0)
+        #expect(TokenActivityColorScale(values: [5, 5, 5]).intensity(5) == 0.25)
+    }
+
     @Test func `Catch up publications invalidate token history even when usage and device timestamps stay fixed`() {
         let now = Date(timeIntervalSince1970: 1_789_084_800)
         let provider = ProviderUsageSnapshot(
@@ -155,6 +165,12 @@ struct TokenActivityTests {
         ])
         #expect(TokenActivity.total([zero]) == TokenActivityTotal(value: 0, isLowerBound: false))
         #expect(TokenActivity.total([unknown]).value == nil)
+        #expect(TokenActivity.dailyTotals([known, partial])[key]
+            == TokenActivityTotal(value: 200, isLowerBound: true))
+        #expect(TokenActivity.dailyTotals([known, zero])[key]
+            == TokenActivityTotal(value: 100, isLowerBound: false))
+        #expect(TokenActivity.dailyTotals([unknown])[key]?.value == nil)
+        #expect(TokenActivity.dailyTotals([zero])[key]?.value == 0)
         #expect(TokenActivity.total([known], dayKey: "2026-09-10").value == nil)
         for day in [nil, key] {
             #expect(TokenActivity.total([known, unknown], dayKey: day)

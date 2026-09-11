@@ -53,6 +53,12 @@ enum TokenActivity {
             isLowerBound: !values.isEmpty && incomplete)
     }
 
+    /// Both Cost and provider grids consume the same daily totals, including missing/lower-bound states.
+    static func dailyTotals(_ series: [TokenActivitySeries]) -> [String: TokenActivityTotal] {
+        let keys = Set(series.flatMap { $0.days.map(\.dayKey) })
+        return Dictionary(uniqueKeysWithValues: keys.map { ($0, Self.total(series, dayKey: $0)) })
+    }
+
     static func window(referenceDate: Date, calendar: Calendar) -> ClosedRange<Date> {
         let today = calendar.startOfDay(for: referenceDate)
         let firstDay = calendar.date(byAdding: .day, value: -364, to: today)!
@@ -174,5 +180,24 @@ enum TokenActivity {
     static func dayKey(_ date: Date, calendar: Calendar) -> String {
         let parts = calendar.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
+    }
+}
+
+/// Quartiles of positive days avoid a single outlier flattening a whole year's colors.
+/// Tied counts always share a color; zero and unavailable remain separate states.
+struct TokenActivityColorScale {
+    let thresholds: [Int]
+
+    init(values: [Int]) {
+        let positive = values.filter { $0 > 0 }.sorted()
+        self.thresholds = positive.isEmpty ? [] : [1, 2, 3].map {
+            positive[min(positive.count - 1, (positive.count * $0) / 4)]
+        }
+    }
+
+    func intensity(_ tokens: Int) -> Double {
+        guard tokens > 0 else { return 0 }
+        guard !self.thresholds.isEmpty else { return 0.25 }
+        return 0.25 + Double(self.thresholds.count { tokens > $0 }) * 0.25
     }
 }

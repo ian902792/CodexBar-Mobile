@@ -93,3 +93,9 @@ UI夹具说明：`UI_TEST_PREVIEW_DATA`只注入内存快照，不写本地账�
 - 复盘与方案见05-review-audit；审计评论在第六轮请求前发布。
 - 统一 producer/reader 日历刷新标识与 optional / lower-bound 总数，覆盖同一时刻不同设备跨日、≥ 总数和全未知状态。
 - `/tmp/cbm-2-semantics-tests.log`：744 tests / 49 suites、2 UI tests 全部通过；结果包 `Test-CodexBarMobile-2026.09.11_15-04-21--0700.xcresult`。
+
+## Build 201 热力图反馈修订
+- 总图使用相同series按日total求和；新增dailyTotals回归验证已知、未知、0、部分下界与分项一致；新增高日用量、极端离群值、重复值、零值分档回归。
+- `/tmp/cbm-heatmap-tests.log`：745 tests /49 suites通过；首轮Cost导航UI测试发现标题空白点击范围问题，补contentShape后复测。原有Provider横滑与回到今天测试通过。
+- 此次仅iOS展示/颜色及按日投影，无Mac、Shared、payload、CloudKit或数据库写入修改。上文16组合对应合成回归随全套测试重跑；全部仍是substituted，不新增物理多设备验证结论。
+- 候选版本2.0.0(201)，未上传。最终focused/UI结果与截图见06-heatmap-feedback.md。
