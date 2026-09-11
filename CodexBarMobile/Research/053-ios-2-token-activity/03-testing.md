@@ -99,3 +99,5 @@ UI夹具说明：`UI_TEST_PREVIEW_DATA`只注入内存快照，不写本地账�
 - `/tmp/cbm-heatmap-tests.log`：745 tests /49 suites通过；首轮Cost导航UI测试发现标题空白点击范围问题，补contentShape后复测。原有Provider横滑与回到今天测试通过。
 - 此次仅iOS展示/颜色及按日投影，无Mac、Shared、payload、CloudKit或数据库写入修改。上文16组合对应合成回归随全套测试重跑；全部仍是substituted，不新增物理多设备验证结论。
 - 候选版本2.0.0(201)，未上传。最终focused/UI结果与截图见06-heatmap-feedback.md。
+
+- Build 201 final: /tmp/cbm-heatmap-final.log; 15 TokenActivity tests + 2 UI tests passed, including navigation, long press and horizontal history. Actual screenshots inspected; see 06-heatmap-feedback.md.
