@@ -6,6 +6,45 @@ final class CodexBarMobileUITests: XCTestCase {
     }
 
     @MainActor
+    func testRoomyNavigationPreservesProviderThroughPortraitResize() throws {
+        let app = self.makeApp()
+        app.launchArguments += ["-cwlEnabled", "NO"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        defer { XCUIDevice.shared.orientation = .portrait }
+        app.launch()
+        try XCTSkipUnless(min(app.frame.width, app.frame.height) >= 600, "Requires a roomy simulator window")
+        let landscape = NSPredicate { _, _ in app.frame.width > app.frame.height }
+        expectation(for: landscape, evaluatedWith: app)
+        waitForExpectations(timeout: 5)
+        let rail = app.otherElements["adaptive-trailing-navigation"]
+        XCTAssertTrue(rail.waitForExistence(timeout: 10))
+        let provider = app.buttons["provider-group-codex"]
+        XCTAssertTrue(provider.waitForExistence(timeout: 5))
+        provider.tap()
+        XCTAssertTrue(app.navigationBars["Codex"].waitForExistence(timeout: 5))
+        XCUIDevice.shared.orientation = .portrait
+        let portrait = NSPredicate { _, _ in app.frame.height > app.frame.width }
+        expectation(for: portrait, evaluatedWith: app)
+        waitForExpectations(timeout: 5)
+        XCTAssertFalse(app.buttons["adaptive-tab-cost"].exists)
+        XCTAssertTrue(app.navigationBars["Codex"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.tabBars.buttons["Setting"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Setting"].tap()
+        app.staticTexts["Usage Setting"].tap()
+        XCTAssertTrue(app.switches["show-remaining-usage-toggle"].waitForExistence(timeout: 5))
+        XCUIDevice.shared.orientation = .landscapeLeft
+        expectation(for: landscape, evaluatedWith: app)
+        waitForExpectations(timeout: 5)
+        XCTAssertTrue(app.buttons["adaptive-tab-cost"].waitForExistence(timeout: 5))
+        app.buttons["adaptive-tab-cost"].tap()
+        XCTAssertTrue(app.staticTexts["Overview"].waitForExistence(timeout: 5))
+        let shot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        shot.name = "Generic iPad resize validation - not a Duo device"
+        shot.lifetime = .keepAlways
+        add(shot)
+    }
+
+    @MainActor
     func testUsageSettingsSwitchBetweenUsedAndRemainingPercentages() {
         let app = self.makeApp()
         app.launch()

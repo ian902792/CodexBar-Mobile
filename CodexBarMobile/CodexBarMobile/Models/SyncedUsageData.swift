@@ -114,8 +114,10 @@ final class SyncedUsageData {
 
     // MARK: - Lifecycle
 
-    init(reader: CloudSyncReader = CloudSyncReader()) {
+    init(reader: CloudSyncReader = CloudSyncReader(), hydrateFromPersistence: Bool = true) {
         self.reader = reader
+        // Preview fixtures must not scan the real store or import account/KVS state.
+        guard hydrateFromPersistence else { return }
 
         // Linkages cached in UserDefaults so cold start applies them
         // BEFORE the first CloudKit fetch returns. Without this the user

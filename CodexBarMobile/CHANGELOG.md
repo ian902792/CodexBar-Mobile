@@ -5,6 +5,8 @@ All notable changes to the CodexBar iOS companion app will be documented in this
 ## [2.0.0 (200)] — Unreleased
 
 ### Added
+- Content-sized adaptive layouts: two-column Usage cards in roomy portrait windows, Usage/Settings list-detail and trailing navigation in roomy landscape, paired Cost summary/charts, and wider provider heatmap grids. Includes illustrative SwiftUI previews; Duo-specific SDK/hinge behavior is not yet verified.
+
 - Shared yearly Token Activity heatmaps in provider details, with provider colors and explicit unavailable states; a combined daily-token heatmap on Cost opens all provider heatmaps, fully expanded with full-width charts and larger headings. Positive-day quartile colors distinguish high usage without clipping at 10M; compact cells expose more months and support day selection by tap or long press.
 - Preserve token availability in the local daily ledger independently of cost availability.
 

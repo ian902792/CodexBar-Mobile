@@ -2,3 +2,5 @@ Token activity across your Macs, with a clearer home for Codex service costs.
 
 • Explore combined daily tokens on Cost and all provider heatmaps in detail, with clearer colors and a wider layout.
 • Tap or hold a day to see its tokens. Missing history stays distinct from zero. Codex Service Mix lives in Codex details.
+
+• Layouts adapt to wider windows with side-by-side content, while compact screens keep the familiar single-column view.

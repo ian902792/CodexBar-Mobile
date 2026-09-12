@@ -101,3 +101,8 @@ UI夹具说明：`UI_TEST_PREVIEW_DATA`只注入内存快照，不写本地账�
 - 候选版本2.0.0(201)，未上传。最终focused/UI结果与截图见06-heatmap-feedback.md。
 
 - Build 201 final: /tmp/cbm-heatmap-final.log; 15 TokenActivity tests + 2 UI tests passed, including navigation, long press and horizontal history. Actual screenshots inspected; see 06-heatmap-feedback.md.
+
+
+## Adaptive layout increment (build 201)
+
+See [07-adaptive-duo.md](07-adaptive-duo.md) for the 24-render gallery, final 745 Swift Testing + 41 XCTest pass, ordinary iPhone UI checks and generic iPad resize test. No new wire/schema/production cache semantics are introduced; this increment rearranges existing data views. No additional physical 16-device-version combinations are claimed. Duo-specific verification remains pending its SDK/runtime.

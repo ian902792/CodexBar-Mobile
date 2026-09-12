@@ -1,6 +1,34 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Layouts adapt to wider windows with side-by-side content, while compact screens keep the familiar single-column view.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Layouts adapt to wider windows with side-by-side content, while compact screens keep the familiar single-column view."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "宽屏窗口可并排查看内容，紧凑屏幕保留熟悉的单列布局。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "寬螢幕視窗可並排查看內容，緊湊螢幕保留熟悉的單欄版面。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広いウインドウではコンテンツを並べて表示し、コンパクトな画面では従来の1列表示を保ちます。"
+          }
+        }
+      }
+    },
     "Tap or hold a day to see its tokens. Missing history stays distinct from zero. Codex Service Mix lives in Codex details.": {
       "localizations": {
         "en": {

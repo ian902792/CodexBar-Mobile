@@ -121,6 +121,7 @@ struct TokenActivitySection: View {
 }
 
 private struct TokenActivityCharts: View {
+    @Environment(\.mobileAdaptiveLayout) private var layout
     let series: [TokenActivitySeries]
     let isOverview: Bool
     let referenceDate: Date
@@ -162,27 +163,35 @@ private struct TokenActivityCharts: View {
                 .font(.caption).foregroundStyle(.secondary)
             Text(String(localized: "Recorded tokens") + ": " + TokenActivity.total(self.series).text)
                 .font(.subheadline.monospacedDigit())
-            ForEach(self.series) { item in
-                VStack(alignment: .leading, spacing: 8) {
-                    if self.isOverview {
-                        Text(self.title(for: item))
-                            .font(.title3.bold())
-                            .foregroundStyle(ProviderColorPalette.color(for: item.provider))
-                    }
-                    ScrollViewReader { proxy in
-                        ScrollView(.horizontal) {
-                            TokenActivityGrid(
-                                series: [item],
-                                color: ProviderColorPalette.color(for: item.provider),
-                                label: self.title(for: item),
-                                referenceDate: self.referenceDate,
-                                selectedDay: self.daySelection)
-                                .id(item.id)
+            LazyVGrid(
+                columns: Array(
+                    repeating: GridItem(.flexible(), spacing: 20),
+                    count: self.isOverview && self.layout.usesTwoColumns ? 2 : 1),
+                alignment: .leading,
+                spacing: 20)
+            {
+                ForEach(self.series) { item in
+                    VStack(alignment: .leading, spacing: 8) {
+                        if self.isOverview {
+                            Text(self.title(for: item))
+                                .font(.title3.bold())
+                                .foregroundStyle(ProviderColorPalette.color(for: item.provider))
                         }
-                        .defaultScrollAnchor(.trailing)
-                        Button(String(localized: "Back to today")) {
-                            proxy.scrollTo(item.id, anchor: .trailing)
-                        }.font(.caption)
+                        ScrollViewReader { proxy in
+                            ScrollView(.horizontal) {
+                                TokenActivityGrid(
+                                    series: [item],
+                                    color: ProviderColorPalette.color(for: item.provider),
+                                    label: self.title(for: item),
+                                    referenceDate: self.referenceDate,
+                                    selectedDay: self.daySelection)
+                                    .id(item.id)
+                            }
+                            .defaultScrollAnchor(.trailing)
+                            Button(String(localized: "Back to today")) {
+                                proxy.scrollTo(item.id, anchor: .trailing)
+                            }.font(.caption)
+                        }
                     }
                 }
             }
