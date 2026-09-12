@@ -9,6 +9,7 @@ import SwiftUI
 enum ShareCardStyleOption: String, CaseIterable, Identifiable {
     case classic
     case cyber
+    case heatmap
 
     var id: String {
         rawValue
@@ -18,6 +19,15 @@ enum ShareCardStyleOption: String, CaseIterable, Identifiable {
         switch self {
         case .classic: String(localized: "Classic")
         case .cyber: String(localized: "Vibe")
+        case .heatmap: String(localized: "Heatmap")
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .classic: "doc.text.image"
+        case .cyber: "sparkles"
+        case .heatmap: "square.grid.3x3.square"
         }
     }
 }
@@ -115,6 +125,11 @@ struct ShareCardData {
         return "\(prefix)\(CostFormatting.usd(self.todayCost))"
     }
 
+    var totalCostDisplayValue: String {
+        guard self.totalCostIsKnown else { return "—" }
+        return CostFormatting.usd(self.totalCost)
+    }
+
     func chartBarHeight(for day: DailyBar, chartHeight: CGFloat) -> CGFloat {
         guard day.costIsKnown, day.cost > 0 else { return 0 }
         return max(2, CGFloat(day.cost / self.chartMaximumCost) * chartHeight)
@@ -154,9 +169,15 @@ enum CostShareService {
         period: SharePeriod,
         data: ShareCardData,
         theme: ShareCardTheme = .light,
-        style: ShareCardStyleOption = .classic) -> UIImage?
+        style: ShareCardStyleOption = .classic,
+        heatmapData: HeatmapShareData? = nil) -> UIImage?
     {
-        let view = CostShareCardView(period: period, data: data, theme: theme, style: style)
+        let view = CostShareCardView(
+            period: period,
+            data: data,
+            theme: theme,
+            style: style,
+            heatmapData: heatmapData)
         let renderer = ImageRenderer(content: view)
         renderer.scale = 3.0
         return renderer.uiImage

@@ -53,3 +53,4 @@ This directory contains research documents for features being considered for Cod
 
 | 051 | v0.58.0 single upstream sync (10 releases; issues #108/#109/#111–118) | `in-progress` | Mac0.58.0.1已正式发布；iOS未上传，追加历史调查另行处理 | [051-v058-upstream-sync/00-overview.md](051-v058-upstream-sync/00-overview.md) | 2026-09-10 |
 | 052 | iOS历史完整性与后台刷新 | `in-progress` | 已确认代码缺陷已修复；问题手机金额对账待设备/页面确认 | [052-history-refresh-integrity/00-research.md](052-history-refresh-integrity/00-research.md) | 2026-09-10 |
+| 054 | Cost 分享编辑页与 Heatmap 模板 | `in-progress` | 预览优先；三模板、全年 Heatmap 与 Provider 筛选已实现，验证及 TF 203 进行中 | [054-cost-share-redesign/00-design.md](054-cost-share-redesign/00-design.md) | 2026-09-11 |

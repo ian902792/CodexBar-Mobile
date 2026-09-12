@@ -38,4 +38,24 @@ final class ShareCardRenderTests: XCTestCase {
             }
         }
     }
+
+    @MainActor
+    func testRenderHeatmapShareCard() throws {
+        let outputDir = "/tmp/codexbar-share-cards"
+        try FileManager.default.createDirectory(atPath: outputDir, withIntermediateDirectories: true)
+        for (theme, label) in [(ShareCardTheme.light, "light"), (.dark, "dark")] {
+            let renderer = ImageRenderer(content: CostShareCardView(
+                period: .month,
+                data: .preview,
+                theme: theme,
+                style: .heatmap,
+                heatmapData: .preview))
+            renderer.scale = 3
+            let image = try XCTUnwrap(renderer.uiImage)
+            XCTAssertEqual(image.cgImage?.width, 1170)
+            XCTAssertEqual(image.cgImage?.height, 1560)
+            let png = try XCTUnwrap(image.pngData())
+            try png.write(to: URL(fileURLWithPath: outputDir + "/heatmap_\(label).png"))
+        }
+    }
 }

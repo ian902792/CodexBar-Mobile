@@ -1,6 +1,790 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "AI activity, beautifully summarized.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "AI activity, beautifully summarized."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "精美呈现您的 AI 活动。"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "精美呈現您的 AI 活動。"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "AIアクティビティを美しくまとめます。"
+        }
+      }
+    }
+  },
+  "Spend": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Spend"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "费用"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "費用"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "利用額"
+        }
+      }
+    }
+  },
+  "tokens recorded": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "tokens recorded"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已记录 Token"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已記錄 Token"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "記録済みトークン"
+        }
+      }
+    }
+  },
+  "All Providers": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "All Providers"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "所有提供商"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "所有提供者"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "すべてのプロバイダー"
+        }
+      }
+    }
+  },
+  "Close": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Close"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "关闭"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "關閉"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "閉じる"
+        }
+      }
+    }
+  },
+  "Could Not Create Image": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Could Not Create Image"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "无法创建图片"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "無法建立圖片"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "画像を作成できませんでした"
+        }
+      }
+    }
+  },
+  "Create Share Card": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Create Share Card"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "创建分享卡片"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "建立分享卡片"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "シェアカードを作成"
+        }
+      }
+    }
+  },
+  "Create polished share cards with a preview-first editor, refreshed Classic and Vibe designs, and a Token Activity heatmap for all providers or one provider.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Create polished share cards with a preview-first editor, refreshed Classic and Vibe designs, and a Token Activity heatmap for all providers or one provider."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "使用预览优先的编辑器创建精美分享卡片，焕新 Classic 和 Vibe 设计，并可生成所有提供商或单个提供商的 Token 活动热力图。"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "使用以預覽為主的編輯器建立精美分享卡片，煥新 Classic 和 Vibe 設計，並可產生所有提供者或單一提供者的 Token 活動熱力圖。"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "プレビュー中心のエディタ、刷新したClassicとVibe、Token Activityヒートマップで、全プロバイダーまたは個別プロバイダーの共有カードを作成できます。"
+        }
+      }
+    }
+  },
+  "Details": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Details"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "详细选项"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "詳細選項"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "詳細"
+        }
+      }
+    }
+  },
+  "Heatmap": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Heatmap"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "热力图"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "熱力圖"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "ヒートマップ"
+        }
+      }
+    }
+  },
+  "Less": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Less"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "少"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "少"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "少"
+        }
+      }
+    }
+  },
+  "Missing history is not zero.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Missing history is not zero."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "缺失历史并不代表零用量。"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "缺少的歷史記錄不代表零用量。"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "履歴の欠落は使用量ゼロを意味しません。"
+        }
+      }
+    }
+  },
+  "More": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "More"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "多"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "多"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "多"
+        }
+      }
+    }
+  },
+  "OK": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "OK"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "好"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "好"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "OK"
+        }
+      }
+    }
+  },
+  "One square is one day. Missing history remains different from zero usage.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "One square is one day. Missing history remains different from zero usage."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "每个方格代表一天。缺失历史仍与零用量不同。"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "每個方格代表一天。缺少的歷史記錄仍與零用量不同。"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "1マスが1日です。履歴の欠落と使用量ゼロは区別されます。"
+        }
+      }
+    }
+  },
+  "Past 180 Days": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Past 180 Days"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "过去 180 天"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "過去 180 天"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "過去180日"
+        }
+      }
+    }
+  },
+  "Past 90 Days": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Past 90 Days"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "过去 90 天"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "過去 90 天"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "過去90日"
+        }
+      }
+    }
+  },
+  "Past Year": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Past Year"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "过去一年"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "過去一年"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "過去1年間"
+        }
+      }
+    }
+  },
+  "Peak Day": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Peak Day"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "单日峰值"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "單日峰值"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "1日のピーク"
+        }
+      }
+    }
+  },
+  "Please try again.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Please try again."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "请重试。"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "請再試一次。"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "もう一度お試しください。"
+        }
+      }
+    }
+  },
+  "Preparing token history…": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Preparing token history…"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "正在准备 Token 历史记录…"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "正在準備 Token 歷史記錄…"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "トークン履歴を準備中…"
+        }
+      }
+    }
+  },
+  "Range": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Range"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "范围"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "範圍"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "範囲"
+        }
+      }
+    }
+  },
+  "Share Image": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Share Image"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "分享图片"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "分享圖片"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "画像を共有"
+        }
+      }
+    }
+  },
+  "Template": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Template"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "模板"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "範本"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "テンプレート"
+        }
+      }
+    }
+  },
+  "The preview and shared image always use the same report data.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "The preview and shared image always use the same report data."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "预览和分享图片始终使用同一份报告数据。"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "預覽和分享圖片一律使用同一份報告資料。"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "プレビューと共有画像には常に同じレポートデータが使われます。"
+        }
+      }
+    }
+  },
+  "Token history is unavailable.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Token history is unavailable."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Token 历史记录不可用。"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Token 歷史記錄無法使用。"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "トークン履歴を利用できません。"
+        }
+      }
+    }
+  },
+  "Try Again": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Try Again"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "重试"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "再試一次"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "再試行"
+        }
+      }
+    }
+  },
+  "Your AI activity, at a glance": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Your AI activity, at a glance"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "一览您的 AI 活动"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "一覽您的 AI 活動"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "AIアクティビティをひと目で確認"
+        }
+      }
+    }
+  },
   "Enjoy side-by-side views on iPad and a familiar single column on iPhone. Both keep bottom tabs and preserve navigation when you search and rotate.": {
     "localizations": {
       "en": {

@@ -244,6 +244,64 @@ final class CodexBarMobileUITests: XCTestCase {
     }
 
     @MainActor
+    func testCostShareEditorUsesPreviewFirstTemplatesAndHeatmapControls() {
+        let app = self.makeApp()
+        app.launch()
+        app.tabBars.buttons["Cost"].tap()
+        let share = app.buttons["cost-share-button"]
+        XCTAssertTrue(share.waitForExistence(timeout: 10))
+        share.tap()
+
+        XCTAssertTrue(app.navigationBars["Create Share Card"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.otherElements["share-card-preview"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["share-style-classic"].exists)
+        XCTAssertTrue(app.buttons["share-style-cyber"].exists)
+        let heatmap = app.buttons["share-style-heatmap"]
+        XCTAssertTrue(heatmap.exists)
+        XCTAssertFalse(app.segmentedControls.firstMatch.exists)
+
+        heatmap.tap()
+        XCTAssertTrue(app.buttons["share-range-picker"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.buttons["share-provider-picker"].exists)
+        let action = app.buttons["share-card-action"]
+        let enabled = NSPredicate(format: "isEnabled == true")
+        expectation(for: enabled, evaluatedWith: action)
+        waitForExpectations(timeout: 8)
+        let shot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        shot.name = "Cost share editor - Heatmap"
+        shot.lifetime = .keepAlways
+        add(shot)
+        action.tap()
+        XCTAssertTrue(app.otherElements["ActivityListView"].waitForExistence(timeout: 8))
+    }
+
+    @MainActor
+    func testCostShareEditorUsesTwoColumnsOnWideIPad() throws {
+        XCUIDevice.shared.orientation = .landscapeLeft
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let app = self.makeApp()
+        app.launch()
+        try XCTSkipUnless(app.frame.width >= 700, "Requires a wide iPad window")
+
+        app.tabBars.buttons["Cost"].tap()
+        let share = app.buttons["cost-share-button"]
+        XCTAssertTrue(share.waitForExistence(timeout: 10))
+        share.tap()
+
+        let preview = app.otherElements["share-card-preview"]
+        let period = app.buttons["share-period-picker"]
+        XCTAssertTrue(preview.waitForExistence(timeout: 5))
+        XCTAssertTrue(period.waitForExistence(timeout: 5))
+        XCTAssertLessThan(preview.frame.maxX, period.frame.minX)
+        XCTAssertTrue(app.buttons["share-card-action"].isHittable)
+
+        let shot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        shot.name = "Cost share editor - iPad landscape"
+        shot.lifetime = .keepAlways
+        add(shot)
+    }
+
+    @MainActor
     func testSpringBoardWidgetCanSelectOverview() throws {
         try self.runSpringBoardWidgetModeSelection(
             name: "Overview",

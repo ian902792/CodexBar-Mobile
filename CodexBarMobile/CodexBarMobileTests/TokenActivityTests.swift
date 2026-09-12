@@ -194,6 +194,45 @@ struct TokenActivityTests {
             tokenCountIsKnown: true)) == 0)
     }
 
+    @Test func `Heatmap share projection preserves window totals and splits a year without overlap`() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "America/Los_Angeles"))
+        let formatter = ISO8601DateFormatter()
+        let referenceDate = try #require(formatter.date(from: "2026-09-11T19:00:00Z"))
+        let provider = self.fixtureProvider()
+        let series = TokenActivitySeries(provider: provider, days: [
+            SyncDailyPoint(dayKey: "2026-09-09", costUSD: 0, totalTokens: 100, tokenCountIsKnown: true),
+            SyncDailyPoint(dayKey: "2026-09-10", costUSD: 0, totalTokens: 0, tokenCountIsKnown: true),
+            SyncDailyPoint(dayKey: "2026-09-11", costUSD: 0, totalTokens: 200, tokenCountIsKnown: true),
+        ])
+        let short = HeatmapShareData(
+            series: [series],
+            sourceTitle: "Codex",
+            window: .days90,
+            color: .purple,
+            referenceDate: referenceDate,
+            calendar: calendar)
+        #expect(short.days.count == 90)
+        #expect(short.days.last?.dayKey == "2026-09-11")
+        #expect(short.total == TokenActivityTotal(value: 300, isLowerBound: true))
+        #expect(short.activeDays == 2)
+        #expect(short.peakTokens == 200)
+        #expect(short.calendarBlocks.count == 1)
+
+        let year = HeatmapShareData(
+            series: [series],
+            sourceTitle: "Codex",
+            window: .days365,
+            color: .purple,
+            referenceDate: referenceDate,
+            calendar: calendar)
+        let flattened = year.calendarBlocks.flatMap(\.self)
+        #expect(year.calendarBlocks.count == 2)
+        #expect(flattened.count == 365)
+        #expect(Set(flattened.map(\.dayKey)).count == 365)
+        #expect(flattened.map(\.dayKey) == year.days.map(\.dayKey))
+    }
+
     @Test func `Known tokens remain available without a monetary cost`() {
         let point = SyncDailyPoint(
             dayKey: "2026-09-10",

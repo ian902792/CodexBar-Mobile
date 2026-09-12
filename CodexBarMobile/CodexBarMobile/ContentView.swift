@@ -988,12 +988,20 @@ private struct CostTab: View {
                         } label: {
                             Image(systemName: "square.and.arrow.up")
                         }
+                        .accessibilityLabel(String(localized: "Create Share Card"))
+                        .accessibilityIdentifier("cost-share-button")
                     }
                 }
             }
-            .sheet(isPresented: self.$showShareSheet) {
+            .fullScreenCover(isPresented: self.$showShareSheet) {
                 if let insights = self.currentInsights {
-                    CostShareSheet(insights: insights)
+                    CostShareSheet(
+                        insights: insights,
+                        providers: self.isDemoMode ? insights.providerRows.map(\.provider)
+                            : self.displaySnapshot.map { MockProviderDetector.filteredProviders(from: $0) } ?? [],
+                        sourceSnapshots: self.usageData.deviceSnapshots,
+                        useLedger: self.shouldUseLedger,
+                        isDemoMode: self.isDemoMode)
                 }
             }
             .task(id: self.ledgerRefreshSignature) {
@@ -4309,6 +4317,8 @@ private enum MobileReleaseNotesCatalog {
                     localized: "Explore combined daily tokens on Cost and all provider heatmaps in detail, with clearer colors and a wider layout."),
                 String(
                     localized: "Tap or hold a day to see its tokens. Missing history stays distinct from zero. Codex Service Mix lives in Codex details."),
+                String(
+                    localized: "Create polished share cards with a preview-first editor, refreshed Classic and Vibe designs, and a Token Activity heatmap for all providers or one provider."),
             ])]),
         ReleaseNotesVersion(
             version: "1.24.0",

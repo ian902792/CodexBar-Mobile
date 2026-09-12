@@ -2,5 +2,6 @@ Token activity across your Macs, with a clearer home for Codex service costs.
 
 • Explore combined daily tokens on Cost and all provider heatmaps in detail, with clearer colors and a wider layout.
 • Tap or hold a day to see its tokens. Missing history stays distinct from zero. Codex Service Mix lives in Codex details.
+• Create polished share cards with a preview-first editor, refreshed Classic and Vibe designs, and a Token Activity heatmap for all providers or one provider.
 
 • Enjoy side-by-side views on iPad and a familiar single column on iPhone. Both keep bottom tabs and preserve navigation when you search and rotate.
