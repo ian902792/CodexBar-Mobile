@@ -1,6 +1,34 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "Enjoy side-by-side views on iPad and a familiar single column on iPhone. Both keep bottom tabs and preserve navigation when you search and rotate.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Enjoy side-by-side views on iPad and a familiar single column on iPhone. Both keep bottom tabs and preserve navigation when you search and rotate."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "iPad 支持并排浏览，iPhone 保留熟悉的单列布局。两者均保留底部标签栏，搜索和旋转屏幕时保持导航状态。"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "iPad 支援並排瀏覽，iPhone 保留熟悉的單欄版面。兩者皆保留底部分頁列，搜尋和旋轉螢幕時保持導覽狀態。"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "iPad では並列表示、iPhone では使い慣れた1列表示に対応。どちらも下部のタブを維持し、検索や画面回転でもナビゲーションの状態を保ちます。"
+        }
+      }
+    }
+  },
     "Enjoy side-by-side views on iPad and a familiar single column on iPhone, with navigation preserved when you search and rotate.": {
       "localizations": {
         "en": {

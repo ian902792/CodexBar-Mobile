@@ -81,6 +81,7 @@ final class CodexBarMobileUITests: XCTestCase {
         XCTAssertTrue(claude.waitForExistence(timeout: 8))
         XCTAssertEqual(claude.frame.minY, codex.frame.minY, accuracy: 4)
         XCTAssertLessThan(claude.frame.maxX, codex.frame.minX)
+        self.assertBottomTabs(app)
         self.captureNavigation(app, name: "iPad portrait two columns")
         let search = app.searchFields.firstMatch
         search.tap()
@@ -92,16 +93,19 @@ final class CodexBarMobileUITests: XCTestCase {
         XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5))
         XCUIDevice.shared.orientation = .landscapeLeft
         self.waitForOrientation(app, landscape: true)
-        XCTAssertTrue(app.buttons["adaptive-tab-settings"].waitForExistence(timeout: 5))
+        self.assertBottomTabs(app)
         XCTAssertTrue(app.navigationBars["Codex"].exists)
         self.captureNavigation(app, name: "iPad landscape selected Codex")
         app.searchFields.firstMatch.tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["adaptive-tab-settings"].exists, "Keyboard must not change navigation layout")
+        XCTAssertFalse(app.buttons["adaptive-tab-settings"].exists)
+        XCTAssertTrue(app.navigationBars["Codex"].exists)
+        XCTAssertTrue(app.buttons["provider-group-codex"].exists, "Keyboard must retain the sidebar and detail")
         self.captureNavigation(app, name: "iPad landscape keyboard keeps navigation")
         app.buttons["provider-group-codex"].tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5))
-        app.buttons["adaptive-tab-settings"].tap()
+        self.assertBottomTabs(app)
+        app.tabBars.buttons["Setting"].tap()
         app.staticTexts["Usage Setting"].tap()
         let toggle = app.switches["show-remaining-usage-toggle"]
         XCTAssertTrue(toggle.waitForExistence(timeout: 5))
@@ -116,7 +120,23 @@ final class CodexBarMobileUITests: XCTestCase {
         self.captureNavigation(app, name: "iPad portrait Cost")
         XCUIDevice.shared.orientation = .landscapeLeft
         self.waitForOrientation(app, landscape: true)
+        self.assertBottomTabs(app)
         self.captureNavigation(app, name: "iPad landscape Cost")
+    }
+
+    @MainActor
+    private func assertBottomTabs(_ app: XCUIApplication) {
+        let usage = app.tabBars.buttons["Usage"]
+        let cost = app.tabBars.buttons["Cost"]
+        let setting = app.tabBars.buttons["Setting"]
+        XCTAssertTrue(setting.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["adaptive-tab-cost"].exists)
+        XCTAssertFalse(app.otherElements["adaptive-trailing-navigation"].exists)
+        XCTAssertGreaterThan(usage.frame.midY, app.frame.minY + app.frame.height * 0.8)
+        XCTAssertEqual(usage.frame.midY, cost.frame.midY, accuracy: 4)
+        XCTAssertEqual(cost.frame.midY, setting.frame.midY, accuracy: 4)
+        XCTAssertLessThan(usage.frame.midX, cost.frame.midX)
+        XCTAssertLessThan(cost.frame.midX, setting.frame.midX)
     }
 
     @MainActor
@@ -150,8 +170,7 @@ final class CodexBarMobileUITests: XCTestCase {
         let landscape = NSPredicate { _, _ in app.frame.width > app.frame.height }
         expectation(for: landscape, evaluatedWith: app)
         waitForExpectations(timeout: 5)
-        let rail = app.otherElements["adaptive-trailing-navigation"]
-        XCTAssertTrue(rail.waitForExistence(timeout: 10))
+        self.assertBottomTabs(app)
         let provider = app.buttons["provider-group-codex"]
         XCTAssertTrue(provider.waitForExistence(timeout: 5))
         provider.tap()
@@ -169,8 +188,8 @@ final class CodexBarMobileUITests: XCTestCase {
         XCUIDevice.shared.orientation = .landscapeLeft
         expectation(for: landscape, evaluatedWith: app)
         waitForExpectations(timeout: 5)
-        XCTAssertTrue(app.buttons["adaptive-tab-cost"].waitForExistence(timeout: 5))
-        app.buttons["adaptive-tab-cost"].tap()
+        self.assertBottomTabs(app)
+        app.tabBars.buttons["Cost"].tap()
         XCTAssertTrue(app.staticTexts["Overview"].waitForExistence(timeout: 5))
         let shot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         shot.name = "Generic iPad resize validation - not a Duo device"

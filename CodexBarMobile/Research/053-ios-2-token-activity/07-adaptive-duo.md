@@ -1,6 +1,6 @@
 # Adaptive layout preparation and Duo-size previews
 
-Status: done (local adaptive layout preparation; Duo-specific validation pending)
+Status: in-progress (202 corrects iPad bottom tabs; earlier results below are historical)
 Branch: feature/ios-adaptive-duo-preview, based on build 201 heatmap fixes.
 
 User approved: outer compact single column; roomy portrait two-column provider cards and bottom navigation; roomy landscape Usage/Settings master-detail and trailing navigation; Cost summary/provider share beside token and spending charts. Preserve selected provider, account, date and navigation through resizing. Screenshots required for every pose and main destination.
@@ -50,3 +50,11 @@ Status: code and local QA complete; TestFlight upload authorized, pending.
 - Source AppIcon visually inspected, 1024 x 1024, no alpha. Archive and Apple CDN checks follow upload.
 - CloudKit audit: Shared/schema/wire and production cache semantics unchanged; Production entitlement retained. No schema deploy or Mac update needed. Prior 16-case substituted matrix remains the limitation for real multi-device sync, not a claimed physical pass.
 - Four-language 2.0 notes updated in the existing block; build 201 in all four project targets. No push/merge/PR or public release requested. Source self-review found no outstanding blocking issue after the search/keyboard fix.
+
+## 202 — iPad navigation correction (in progress)
+
+The user clarified that ordinary iPad must keep bottom tabs in both orientations. Build 201 had already been uploaded when this clarification arrived; it is superseded by 202, not a release acceptance result for this requirement.
+
+Content columns and navigation placement are now independent. Shipping iPhone/iPad windows always use the bottom tab bar, including wide iPad landscape. Wide Usage/Settings list-detail and paired Cost content remain enabled. Trailing navigation requires explicit preview opt-in and is disabled unconditionally in Release. It is an illustrative Duo design, not an inferred device capability based on screen dimensions.
+
+Validation: model coverage separates navigation from columns; full-app iPad UI tests assert bottom location and horizontal tab arrangement in portrait/landscape, absence of a right rail, search/keyboard stability, and preserved provider/Settings selection across resize. Re-run iPhone regression, localized release-note audit, archive entitlement/version checks and upload 202.

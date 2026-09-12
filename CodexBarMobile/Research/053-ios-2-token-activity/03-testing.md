@@ -111,3 +111,7 @@ See [07-adaptive-duo.md](07-adaptive-duo.md) for the 24-render gallery, final 74
 ## Build 201 native navigation release gate
 
 See 07-adaptive-duo.md for actual iPhone 17 Pro / iPhone 17e / iPad Pro 13 test results, the reproduced search/keyboard resize bug and fix, actual-screen images, and upload provenance. All 745 Swift Testing + 41 XCTest cases and five UI case/device executions passed. Full repository lint passed. No wire/schema changes; previous 16 physical combinations remain substituted, not newly claimed as real-device passes.
+
+### Build 202 — bottom tabs on ordinary iPad (in progress)
+
+Navigation placement is separated from content width. No Shared payload, schema, cache, aggregation or wire behavior changes in this increment. The prior 16-case substituted sync matrix remains applicable with the same physical-device limitations; no new physical convergence pass is claimed. Full-app iPad checks now require bottom tabs in both orientations while retaining wide content, and Duo trailing navigation is preview-only. Results will be recorded in 08-native-navigation-testflight.md.

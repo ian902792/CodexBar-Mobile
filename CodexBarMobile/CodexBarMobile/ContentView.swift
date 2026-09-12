@@ -69,6 +69,14 @@ struct ContentView: View {
                 .bool(forKey: MobileSettingsKeys.openCostByDefault) ? .cost : .usage))
     }
 
+    private var allowsPreviewTrailingNavigation: Bool {
+        #if DEBUG
+        self.isLayoutPreview
+        #else
+        false
+        #endif
+    }
+
     private var currentVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
     }
@@ -93,7 +101,8 @@ struct ContentView: View {
             let layout = MobileAdaptiveLayout(
                 width: self.layoutContainerSize == .zero ? geometry.size.width : self.layoutContainerSize.width,
                 height: self.layoutContainerSize == .zero ? geometry.size.height : self.layoutContainerSize.height,
-                largeText: self.dynamicTypeSize.isAccessibilitySize)
+                largeText: self.dynamicTypeSize.isAccessibilitySize,
+                allowsTrailingNavigation: self.allowsPreviewTrailingNavigation)
             HStack(spacing: 0) {
                 self.tabs(trailingNavigation: layout.usesTrailingNavigation)
                     .environment(\.horizontalSizeClass, .compact)
@@ -4295,7 +4304,7 @@ private enum MobileReleaseNotesCatalog {
             summary: String(localized: "Token activity across your Macs, with a clearer home for Codex service costs."),
             sections: [.init(title: String(localized: "What's New"), items: [
                 String(
-                    localized: "Enjoy side-by-side views on iPad and a familiar single column on iPhone, with navigation preserved when you search and rotate."),
+                    localized: "Enjoy side-by-side views on iPad and a familiar single column on iPhone. Both keep bottom tabs and preserve navigation when you search and rotate."),
                 String(
                     localized: "Explore combined daily tokens on Cost and all provider heatmaps in detail, with clearer colors and a wider layout."),
                 String(

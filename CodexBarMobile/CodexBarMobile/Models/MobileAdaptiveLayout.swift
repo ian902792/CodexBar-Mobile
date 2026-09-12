@@ -5,17 +5,19 @@ struct MobileAdaptiveLayout: Equatable {
     var width: CGFloat = 0
     var height: CGFloat = 0
     var largeText = false
+    /// Opt-in for illustrative Duo previews only; shipping windows keep bottom tabs.
+    var allowsTrailingNavigation = false
 
     var roomy: Bool {
         self.width >= 700 && self.height >= 600
     }
 
     var usesTrailingNavigation: Bool {
-        self.roomy && self.width > self.height
+        self.allowsTrailingNavigation && self.roomy && self.width > self.height
     }
 
     var usesListDetail: Bool {
-        self.usesTrailingNavigation && !self.largeText
+        self.roomy && self.width > self.height && !self.largeText
     }
 
     var usesTwoColumns: Bool {
