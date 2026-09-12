@@ -1,6 +1,6 @@
 # 054 — Cost 分享编辑页与 Heatmap 模板
 
-状态：in-progress，设计已由用户确认，正在完成验证与 TestFlight 203。2026-09-11。
+状态：done。设计、实现、iPhone/iPad 验证与 TestFlight 203 已完成。2026-09-11。
 分支：`feature/ios-cost-share-redesign`，从已完成 TestFlight 202 的本地 `3ecbcae2a` 派生，保留 iPhone/iPad 底部导航规则。本轮使用同一 2.0.0 更新说明，构建号升级为 203。
 
 ## 已审计的现状

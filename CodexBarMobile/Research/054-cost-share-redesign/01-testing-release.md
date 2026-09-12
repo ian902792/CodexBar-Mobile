@@ -1,6 +1,6 @@
 # 054 — 测试与 TestFlight 证据
 
-状态：in-progress。目标版本：iOS 2.0.0 (203)。分支：`feature/ios-cost-share-redesign`。
+状态：done。目标版本：iOS 2.0.0 (203)。分支：`feature/ios-cost-share-redesign`。
 
 ## 数据与同步边界
 
@@ -27,6 +27,11 @@
 
 ## 发布记录
 
-- Source commit：待最终提交后填写。
-- Archive / IPA：待生成。
-- App Store Connect build ID、处理状态、Internal 测试组和四语 What to Test：待上传回读。
+- Source commit：`70b39c7f0e70cccda5b50c5d6f2a6c894bb47354`（`feat(ios): redesign cost sharing cards`）。归档时工作树除既有未跟踪 `output/`、`tmp/` 外无变化。
+- Archive：`/tmp/CodexBarMobile-2.0.0-203-share.xcarchive`，41 MB；归档内容清单 SHA-256 为 `0852047182f78a70a83bfb155b385526259550d48c9665bf134fbde9f210bc46`。
+- 归档核验：主 App、Widget、Push Extension、Sync Extension 均为 `2.0.0 (203)`；`codesign --verify --deep --strict` 通过；主 App entitlement 的 `com.apple.developer.icloud-container-environment` 为 `Production`；归档图标和 App Store Connect 回传图标均人工确认正确。
+- 上传：2026-09-11 21:55 PDT，`xcodebuild -exportArchive` 返回 `Upload succeeded` / `EXPORT SUCCEEDED`。该 upload destination 不在本地保留 IPA；可复现交付物为上述已核验 `.xcarchive`。
+- App Store Connect：App `6760216772`，build ID `77b79982-fe71-4d1c-8a08-5c8c04d484cf`；build `203` 的 processing state 为 `VALID`，Internal 状态为 `IN_BETA_TESTING`，External 状态为 `READY_FOR_BETA_SUBMISSION`。
+- Internal 分发：API 回读确认 build 203 已属于唯一的 `Internal` 测试组，`autoNotifyEnabled=true`。
+- What to Test：`en-US`、`zh-Hans`、`zh-Hant`、`ja` 四个 locale 均已由 `AppStoreMetadata/2.0.0/*/release_notes.txt` 写入，并逐项回读验证内容完全一致。
+- CloudKit：相对 `3ecbcae2a` 无 schema、Shared payload、producer、缓存写入或跨版本读取变化，Production schema 结论为 **NO_DEPLOY**。
