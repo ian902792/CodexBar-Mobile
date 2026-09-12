@@ -6,6 +6,140 @@ final class CodexBarMobileUITests: XCTestCase {
     }
 
     @MainActor
+    func testPhoneNavigationSafeAreaAndRotation() throws {
+        XCUIDevice.shared.orientation = .portrait
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let app = self.makeApp()
+        app.launchArguments += ["-cwlEnabled", "NO"]
+        app.launch()
+        try XCTSkipUnless(app.frame.width < 600, "Requires a compact phone")
+        self.captureNavigation(app, name: "Phone Usage portrait")
+        let provider = app.buttons["provider-group-codex"]
+        for _ in 0..<4 where !provider.isHittable {
+            app.swipeUp()
+        }
+        provider.tap()
+        XCTAssertTrue(app.navigationBars["Codex"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Cost"].tap()
+        app.tabBars.buttons["Usage"].tap()
+        XCTAssertTrue(app.navigationBars["Codex"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons.firstMatch.tap()
+        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+        // Select again after returning: catches a stale compact-column binding.
+        for _ in 0..<4 where !provider.isHittable {
+            app.swipeUp()
+        }
+        provider.tap()
+        XCTAssertTrue(app.navigationBars["Codex"].waitForExistence(timeout: 5))
+        XCUIDevice.shared.orientation = .landscapeLeft
+        self.waitForOrientation(app, landscape: true)
+        XCTAssertTrue(app.navigationBars["Codex"].exists)
+        XCTAssertFalse(app.buttons["adaptive-tab-cost"].exists)
+        self.captureNavigation(app, name: "Phone provider landscape")
+        XCUIDevice.shared.orientation = .portrait
+        self.waitForOrientation(app, landscape: false)
+        app.navigationBars.buttons.firstMatch.tap()
+        // Scroll completely to the end; final content must clear the tab buttons.
+        for _ in 0..<16 {
+            app.swipeUp(velocity: .fast)
+        }
+        let footer = app.otherElements["usage-scroll-footer"].firstMatch
+        XCTAssertTrue(footer.exists)
+        XCTAssertLessThanOrEqual(footer.frame.maxY, app.tabBars.buttons["Usage"].frame.minY)
+        self.captureNavigation(app, name: "Phone Usage bottom clearance")
+        app.tabBars.buttons["Setting"].tap()
+        app.staticTexts["Usage Setting"].tap()
+        XCTAssertTrue(app.switches["show-remaining-usage-toggle"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons.firstMatch.tap()
+        app.staticTexts["Cost Setting"].tap()
+        self.captureNavigation(app, name: "Phone Cost settings")
+        app.navigationBars.buttons.firstMatch.tap()
+        app.tabBars.buttons["Cost"].tap()
+        let overview = app.buttons["token-overview-link"]
+        for _ in 0..<8 where !overview.isHittable {
+            app.swipeUp()
+        }
+        overview.tap()
+        XCTAssertTrue(app.navigationBars["Token Activity"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Setting"].tap()
+        app.tabBars.buttons["Cost"].tap()
+        XCTAssertTrue(app.navigationBars["Token Activity"].exists)
+        app.navigationBars.buttons.firstMatch.tap()
+        self.captureNavigation(app, name: "Phone Cost restored")
+    }
+
+    @MainActor
+    func testTabletColumnsSearchAndSettingsSelectionSurviveResize() throws {
+        XCUIDevice.shared.orientation = .portrait
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let app = self.makeApp()
+        app.launchArguments += ["-cwlEnabled", "NO"]
+        app.launch()
+        try XCTSkipUnless(app.frame.width >= 600, "Requires an iPad")
+        let claude = app.buttons["provider-group-claude"]
+        let codex = app.buttons["provider-group-codex"]
+        XCTAssertTrue(claude.waitForExistence(timeout: 8))
+        XCTAssertEqual(claude.frame.minY, codex.frame.minY, accuracy: 4)
+        XCTAssertLessThan(claude.frame.maxX, codex.frame.minX)
+        self.captureNavigation(app, name: "iPad portrait two columns")
+        let search = app.searchFields.firstMatch
+        search.tap()
+        search.typeText("Codex")
+        XCTAssertTrue(codex.exists)
+        XCTAssertFalse(claude.exists)
+        codex.tap()
+        XCTAssertTrue(app.navigationBars["Codex"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5))
+        XCUIDevice.shared.orientation = .landscapeLeft
+        self.waitForOrientation(app, landscape: true)
+        XCTAssertTrue(app.buttons["adaptive-tab-settings"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Codex"].exists)
+        self.captureNavigation(app, name: "iPad landscape selected Codex")
+        app.searchFields.firstMatch.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["adaptive-tab-settings"].exists, "Keyboard must not change navigation layout")
+        self.captureNavigation(app, name: "iPad landscape keyboard keeps navigation")
+        app.buttons["provider-group-codex"].tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5))
+        app.buttons["adaptive-tab-settings"].tap()
+        app.staticTexts["Usage Setting"].tap()
+        let toggle = app.switches["show-remaining-usage-toggle"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+        self.captureNavigation(app, name: "iPad landscape Settings detail")
+        XCUIDevice.shared.orientation = .portrait
+        self.waitForOrientation(app, landscape: false)
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+        self.captureNavigation(app, name: "iPad portrait retained Settings detail")
+        app.navigationBars.buttons.firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["Cost Setting"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Cost"].tap()
+        self.captureNavigation(app, name: "iPad portrait Cost")
+        XCUIDevice.shared.orientation = .landscapeLeft
+        self.waitForOrientation(app, landscape: true)
+        self.captureNavigation(app, name: "iPad landscape Cost")
+    }
+
+    @MainActor
+    private func waitForOrientation(_ app: XCUIApplication, landscape: Bool) {
+        let predicate = NSPredicate { _, _ in
+            landscape ? app.frame.width > app.frame.height : app.frame.height > app.frame.width
+        }
+        expectation(for: predicate, evaluatedWith: app)
+        waitForExpectations(timeout: 8)
+    }
+
+    @MainActor
+    private func captureNavigation(_ app: XCUIApplication, name: String) {
+        // Capture the display after the compositor finishes orientation changes;
+        // app.screenshot() can crop with stale geometry immediately after rotation.
+        Thread.sleep(forTimeInterval: 1)
+        let shot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        shot.name = name
+        shot.lifetime = .keepAlways
+        add(shot)
+    }
+
+    @MainActor
     func testRoomyNavigationPreservesProviderThroughPortraitResize() throws {
         let app = self.makeApp()
         app.launchArguments += ["-cwlEnabled", "NO"]

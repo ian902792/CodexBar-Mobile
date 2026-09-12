@@ -2,7 +2,7 @@
 
 All notable changes to the CodexBar iOS companion app will be documented in this file.
 
-## [2.0.0 (200)] — Unreleased
+## [2.0.0 (201)] — Unreleased
 
 ### Added
 - Content-sized adaptive layouts: two-column Usage cards in roomy portrait windows, Usage/Settings list-detail and trailing navigation in roomy landscape, paired Cost summary/charts, and wider provider heatmap grids. Includes illustrative SwiftUI previews; Duo-specific SDK/hinge behavior is not yet verified.
@@ -12,6 +12,9 @@ All notable changes to the CodexBar iOS companion app will be documented in this
 
 ### Changed
 - Move Codex Service Mix from the global Cost dashboard to Codex details.
+
+### Fixed
+- Dismiss provider search before opening details and measure adaptive layout independently of keyboard occlusion. Verify compact-phone navigation, bottom content clearance, and iPad selection across rotation in the running app.
 
 ## [1.24.0 (199)] — 2026-09-10
 

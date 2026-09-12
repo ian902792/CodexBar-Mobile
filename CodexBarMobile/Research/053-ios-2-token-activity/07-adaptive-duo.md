@@ -30,3 +30,23 @@ Validation:
 No Mac, Shared payload, CloudKit schema, production history retention or merge arithmetic changes. This layout-only increment changes placement of existing rendered data, not its decoding/interpretation. The prior 2.0 data compatibility matrix remains recorded in 03-testing; these screenshots do not replace it or claim any additional physical-device combinations.
 
 Apple's https://developer.apple.com/iphone-duo/ still lists Xcode 27.1 beta as coming later this month on this date. Local Xcode 26.6/iOS 26.5 cannot validate Duo-specific API, system bars, hinge/safe areas, physical folding or actual inner/outer display transitions. Those remain pending the supported SDK/runtime. No SDK installation, push, PR, merge or TestFlight upload was performed for this increment.
+
+
+## Reopened: native navigation release verification
+
+Status: in-progress. User authorized iPhone/iPad navigation and bottom clearance fixes, followed by TestFlight. Existing custom-window previews are not sufficient safe-area evidence. Validate full app on actual simulator device profiles, repeated push/back, tab state, orientation, last-content clearance, search/keyboard, and Settings. Preserve useful iPad columns. No Duo certification claim.
+
+
+### Native release verification result
+
+Status: code and local QA complete; TestFlight upload authorized, pending.
+
+- Found and fixed a real search/resize bug: selecting a provider left search presentation active; keyboard occlusion changed the layout decision. Search now dismisses before selection. A keyboard-independent background measurement determines layout while actual content retains keyboard avoidance.
+- `/tmp/cbm-native-final-phone.xcresult`: iPhone 17 Pro, 745 Swift Testing + 41 XCTest + 3 UI cases passed. Includes repeated provider push/back, tab restoration, rotation, final Usage footer above tab buttons, Settings navigation and token overview/provider history interaction.
+- `/tmp/cbm-native-ipad-final.xcresult`: iPad Pro 13, passed. Portrait cards align in two columns; search selection dismisses keyboard; landscape search keeps the trailing navigation; selected provider and Settings destination survive rotation; Cost changes layout correctly.
+- `/tmp/cbm-native-compact.xcresult`: iPhone 17e, repeated navigation/rotation/footer clearance case passed. No Duo runtime used.
+- `/tmp/cbm-201-lint-final.log`: complete repository lint passed (portable guards, formatter, strict Sources/Tests SwiftLint and localization). Screenshot PNGs were losslessly compressed below the repository size limit; decoded RGBA equality verified for all 24 images. iOS ContentView retains its pre-existing monolithic strict-lint limitations described above.
+- Native screenshots: `output/qa/native-navigation/`; temporary owner-requested sharing at https://subdivision-testament-msg-reprint.trycloudflare.com/native/ . Full-screen capture replaces cropped app capture after orientation transitions.
+- Source AppIcon visually inspected, 1024 x 1024, no alpha. Archive and Apple CDN checks follow upload.
+- CloudKit audit: Shared/schema/wire and production cache semantics unchanged; Production entitlement retained. No schema deploy or Mac update needed. Prior 16-case substituted matrix remains the limitation for real multi-device sync, not a claimed physical pass.
+- Four-language 2.0 notes updated in the existing block; build 201 in all four project targets. No push/merge/PR or public release requested. Source self-review found no outstanding blocking issue after the search/keyboard fix.

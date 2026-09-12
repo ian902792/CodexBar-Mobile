@@ -106,3 +106,8 @@ UI夹具说明：`UI_TEST_PREVIEW_DATA`只注入内存快照，不写本地账�
 ## Adaptive layout increment (build 201)
 
 See [07-adaptive-duo.md](07-adaptive-duo.md) for the 24-render gallery, final 745 Swift Testing + 41 XCTest pass, ordinary iPhone UI checks and generic iPad resize test. No new wire/schema/production cache semantics are introduced; this increment rearranges existing data views. No additional physical 16-device-version combinations are claimed. Duo-specific verification remains pending its SDK/runtime.
+
+
+## Build 201 native navigation release gate
+
+See 07-adaptive-duo.md for actual iPhone 17 Pro / iPhone 17e / iPad Pro 13 test results, the reproduced search/keyboard resize bug and fix, actual-screen images, and upload provenance. All 745 Swift Testing + 41 XCTest cases and five UI case/device executions passed. Full repository lint passed. No wire/schema changes; previous 16 physical combinations remain substituted, not newly claimed as real-device passes.

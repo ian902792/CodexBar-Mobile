@@ -50,6 +50,7 @@ struct ContentView: View {
     private let isLayoutPreview: Bool
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var isDemoMode = false
+    @State private var layoutContainerSize: CGSize = .zero
     @State private var selectedTab: MobileRootTab
     @State private var isWidgetSettingsPresented = false
     /// Shared evaluation instant for Usage-list/detail cost surfaces. It moves
@@ -90,8 +91,8 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { geometry in
             let layout = MobileAdaptiveLayout(
-                width: geometry.size.width,
-                height: geometry.size.height,
+                width: self.layoutContainerSize == .zero ? geometry.size.width : self.layoutContainerSize.width,
+                height: self.layoutContainerSize == .zero ? geometry.size.height : self.layoutContainerSize.height,
                 largeText: self.dynamicTypeSize.isAccessibilitySize)
             HStack(spacing: 0) {
                 self.tabs(trailingNavigation: layout.usesTrailingNavigation)
@@ -123,6 +124,15 @@ struct ContentView: View {
                 }
             }
             .environment(\.mobileAdaptiveLayout, layout)
+        }
+        .background {
+            // Measure the window proposal without keyboard occlusion. Content still
+            // observes the normal keyboard safe area; only layout selection ignores it.
+            GeometryReader { _ in
+                Color.clear
+                    .onGeometryChange(for: CGSize.self) { $0.size } action: { self.layoutContainerSize = $0 }
+            }
+            .ignoresSafeArea(.keyboard)
         }
         .modifier(TabBarMinimizeModifier())
         .safeAreaInset(edge: .top) {
@@ -373,6 +383,7 @@ private struct ProviderListView: View {
     /// Filters the Usage provider list by name / ID. Helps when many
     /// providers are synced (20+) and scrolling to find one is tedious.
     @State private var searchText = ""
+    @State private var isSearching = false
 
     var body: some View {
         // Drop extinct mock zombies before any rendering so duplicate
@@ -423,9 +434,10 @@ private struct ProviderListView: View {
         return ScrollView {
             LazyVStack(spacing: 16) {
                 MockProviderBanner(snapshot: self.snapshot)
-                LazyVGrid(columns: Array(
-                    repeating: GridItem(.flexible(), spacing: 16, alignment: .top),
-                    count: self.layout.providerColumns),
+                LazyVGrid(
+                    columns: Array(
+                        repeating: GridItem(.flexible(), spacing: 16, alignment: .top),
+                        count: self.layout.providerColumns),
                     alignment: .leading,
                     spacing: 16)
                 {
@@ -448,6 +460,7 @@ private struct ProviderListView: View {
                         }()
                         let activeLinkage = activeLinkagesByProviderID[group.providerID]?.first
                         Button {
+                            self.isSearching = false
                             self.onSelect(group.providerID)
                         } label: {
                             if self.layout.usesListDetail, candidate == nil, activeLinkage == nil {
@@ -521,6 +534,8 @@ private struct ProviderListView: View {
                 } else {
                     SyncStatusBar(usageData: self.usageData)
                         .padding(.top, 4)
+                        .accessibilityElement(children: .contain)
+                        .accessibilityIdentifier("usage-scroll-footer")
                 }
             }
             .padding(.horizontal, 20)
@@ -533,6 +548,7 @@ private struct ProviderListView: View {
         .modifier(SoftScrollEdgeModifier())
         .searchable(
             text: self.$searchText,
+            isPresented: self.$isSearching,
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: Text("Search providers"))
     }
@@ -1091,6 +1107,8 @@ private struct CostDashboardView: View {
                 } else {
                     SyncStatusBar(usageData: self.usageData)
                         .padding(.top, 4)
+                        .accessibilityElement(children: .contain)
+                        .accessibilityIdentifier("cost-scroll-footer")
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
@@ -4277,7 +4295,7 @@ private enum MobileReleaseNotesCatalog {
             summary: String(localized: "Token activity across your Macs, with a clearer home for Codex service costs."),
             sections: [.init(title: String(localized: "What's New"), items: [
                 String(
-                    localized: "Layouts adapt to wider windows with side-by-side content, while compact screens keep the familiar single-column view."),
+                    localized: "Enjoy side-by-side views on iPad and a familiar single column on iPhone, with navigation preserved when you search and rotate."),
                 String(
                     localized: "Explore combined daily tokens on Cost and all provider heatmaps in detail, with clearer colors and a wider layout."),
                 String(
