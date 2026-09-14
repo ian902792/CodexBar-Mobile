@@ -39,6 +39,10 @@
 
 ## 发布记录
 
+- 最终 source commit：`d5a4a293014d76d3166848fc8804e50084d456ab`（`fix(ios): label selected heatmap account`）。build 206 的完整 iOS 27 测试、lint、CI policy 与 fork README guard 均通过。
+- 最终 Archive：`/Volumes/StudioSSD/Developer/BuildScratch/CodexBar/Archives/CodexBarMobile-2.0.0-206.xcarchive`；archive `Info.plist` SHA-256 为 `5b7f0b269e19d11766fcb1500599768e827f70f01adc9d548dd1a30d0591859e`。主 App、Widget、Push Extension 都是 `2.0.0 (206)`，`codesign --verify --deep --strict` 通过，CloudKit container environment 为 `Production`。
+- 最终 TestFlight 上传：Xcode export/upload 的 Content Delivery 回执为 `UPLOAD SUCCEEDED with no errors`，delivery UUID `8a991a13-9671-4d81-9f7b-d2cac3bb60b8`；App Store Connect 处理、绑定 version 与内部测试组回读仍待完成。
+- build 204、205 均已上传但明确不作为候选；它们不会绑定到 App Store 2.0.0 version 或最终 Internal 测试组。
 - Source commit：`70b39c7f0e70cccda5b50c5d6f2a6c894bb47354`（`feat(ios): redesign cost sharing cards`）。归档时工作树除既有未跟踪 `output/`、`tmp/` 外无变化。
 - Archive：`/tmp/CodexBarMobile-2.0.0-203-share.xcarchive`，41 MB；归档内容清单 SHA-256 为 `0852047182f78a70a83bfb155b385526259550d48c9665bf134fbde9f210bc46`。
 - 归档核验：主 App、Widget、Push Extension、Sync Extension 均为 `2.0.0 (203)`；`codesign --verify --deep --strict` 通过；主 App entitlement 的 `com.apple.developer.icloud-container-environment` 为 `Production`；归档图标和 App Store Connect 回传图标均人工确认正确。
