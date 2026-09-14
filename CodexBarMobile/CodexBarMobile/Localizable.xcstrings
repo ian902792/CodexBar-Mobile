@@ -1,6 +1,15 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Account %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Account %lld" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "アカウント %lld" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "账户 %lld" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "帳戶 %lld" } }
+      }
+    },
   "AI activity, beautifully summarized.": {
     "localizations": {
       "en": {

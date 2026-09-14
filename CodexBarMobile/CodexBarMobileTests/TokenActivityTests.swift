@@ -2,6 +2,7 @@ import CodexBarSync
 import Foundation
 import SwiftData
 import Testing
+import UIKit
 @testable import CodexBarMobile
 
 @Suite("Token Activity data semantics")
@@ -278,17 +279,24 @@ struct TokenActivityTests {
     }
 
     @Test @MainActor func `Heatmap share title preserves the selected duplicate account`() {
-        func series(email: String) -> TokenActivitySeries {
+        func series(
+            email: String?,
+            loginMethod: String? = nil,
+            tint: String? = nil,
+            accountRecordKey: String? = nil) -> TokenActivitySeries
+        {
             TokenActivitySeries(provider: ProviderUsageSnapshot(
                 providerID: "codex",
                 providerName: "Codex",
                 primary: nil,
                 secondary: nil,
                 accountEmail: email,
-                loginMethod: nil,
+                loginMethod: loginMethod,
                 statusMessage: nil,
                 isError: false,
-                lastUpdated: Date(timeIntervalSince1970: 0)), days: [])
+                lastUpdated: Date(timeIntervalSince1970: 0),
+                accountRecordKey: accountRecordKey,
+                providerIconTintHex: tint), days: [])
         }
 
         let personal = series(email: "personal@example.com")
@@ -296,6 +304,27 @@ struct TokenActivityTests {
 
         #expect(CostShareSheet.heatmapSourceTitle(for: personal.id, in: [personal, work]) == "Codex · personal@example.com")
         #expect(CostShareSheet.heatmapSourceTitle(for: nil, in: [personal, work]) == String(localized: "All Providers"))
+
+        let oauth = series(email: nil, loginMethod: "OAuth", accountRecordKey: "oauth")
+        let team = series(email: nil, loginMethod: "Team", accountRecordKey: "team")
+        #expect(CostShareSheet.heatmapSourceTitle(for: oauth.id, in: [oauth, team]) == "Codex · OAuth")
+        #expect(CostShareSheet.heatmapSourceTitle(for: team.id, in: [oauth, team]) == "Codex · Team")
+
+        let secondOAuth = series(email: nil, loginMethod: "OAuth", accountRecordKey: "oauth-second")
+        #expect(CostShareSheet.heatmapSourceTitle(for: secondOAuth.id, in: [oauth, secondOAuth])
+            == "Codex · " + String.localizedStringWithFormat(String(localized: "Account %lld"), 2))
+
+        let customTint = series(email: "tint@example.com", tint: "#D044A7")
+        let color = UIColor(CostShareSheet.heatmapColor(for: customTint))
+        var red = CGFloat.zero
+        var green = CGFloat.zero
+        var blue = CGFloat.zero
+        var alpha = CGFloat.zero
+        #expect(color.getRed(&red, green: &green, blue: &blue, alpha: &alpha))
+        #expect(abs(red - 208.0 / 255.0) < 0.001)
+        #expect(abs(green - 68.0 / 255.0) < 0.001)
+        #expect(abs(blue - 167.0 / 255.0) < 0.001)
+        #expect(abs(alpha - 1) < 0.001)
     }
 
     @Test func `Known tokens remain available without a monetary cost`() {

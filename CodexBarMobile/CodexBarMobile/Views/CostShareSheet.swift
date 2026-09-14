@@ -46,9 +46,7 @@ struct CostShareSheet: View {
                 for: self.selectedProviderID,
                 in: self.tokenSeries),
             window: self.heatmapWindow,
-            color: self.selectedProviderID == nil
-                ? .blue
-                : ProviderColorPalette.color(for: selected?.provider.providerID ?? ""),
+            color: Self.heatmapColor(for: self.selectedProviderID == nil ? nil : selected),
             referenceDate: self.insights.referenceDate)
     }
 
@@ -267,9 +265,24 @@ struct CostShareSheet: View {
         else {
             return String(localized: "All Providers")
         }
-        let duplicates = tokenSeries.count { $0.provider.providerName == item.provider.providerName }
-        guard duplicates > 1, let email = item.provider.accountEmail else { return item.provider.providerName }
-        return item.provider.providerName + " · " + email
+        let duplicates = tokenSeries.filter { $0.provider.providerName == item.provider.providerName }
+        guard duplicates.count > 1 else { return item.provider.providerName }
+        if let email = item.provider.accountEmail, !email.isEmpty {
+            return item.provider.providerName + " · " + email
+        }
+        if let loginMethod = item.provider.loginMethod,
+           !loginMethod.isEmpty,
+           duplicates.count(where: { $0.provider.loginMethod == loginMethod }) == 1
+        {
+            return item.provider.providerName + " · " + loginMethod
+        }
+        let ordinal = (duplicates.firstIndex(where: { $0.id == item.id }) ?? 0) + 1
+        return item.provider.providerName + " · " + String.localizedStringWithFormat(
+            String(localized: "Account %lld"), ordinal)
+    }
+
+    static func heatmapColor(for selectedSeries: TokenActivitySeries?) -> Color {
+        selectedSeries.map { ProviderColorPalette.color(for: $0.provider) } ?? .blue
     }
 
     @MainActor
