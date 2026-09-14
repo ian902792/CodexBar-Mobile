@@ -1,6 +1,6 @@
 # 054 — 测试与 TestFlight 证据
 
-状态：in-progress。目标版本：iOS 2.0.0 (211)。发布分支：`release/ios-2.0-app-store`。
+状态：done。目标版本：iOS 2.0.0 (211)。实现 PR 已合并到 `mobile-dev`，TestFlight build 已交付。
 
 ## Build 211 审查修复与发布替换验证（2026-09-14）
 
@@ -15,9 +15,12 @@
 - 第四轮 PR 审查修复：Heatmap Provider 选择为无邮箱账号采用唯一 login method 或本地化序号消歧；导出颜色改为读取完整 Provider snapshot，因此保留同步插件的 `providerIconTintHex`。定向 Token Activity 测试 19 项通过，build 208 完整 iOS 27 套件已重新通过。
 - 第五轮 PR 审查修复：Peak Day 复用下界覆盖语义，缺失或部分日期存在时显示 `≥`；分享编辑器在 accessibility Dynamic Type 下改为纵向堆叠，避免 iPad Split View 的模板文字截断。按审查循环规则已写入第六轮前的根因审计；定向 Token Activity 测试 19 项、build 209 完整 iOS 27 套件与 lint 均已通过。
 - 第六轮 PR 审查修复：Active Days 同样复用完整性语义，缺失或部分日期存在时显示下界 `≥`，整段均无记录时显示 unavailable，不再伪装为精确活动天数。定向 Token Activity 19 项、build 210 完整 iOS 27 套件与 lint 均已通过。
-- 第八轮 PR 审查修复：iPad 横向列表详情布局中的 Provider 行与紧凑卡片共享同一隐私脱敏 helper，开启“Hide personal information”后，窗口尺寸切换不会暴露账号邮箱。新增 helper 回归测试；因此 build 211 成为唯一候选，完整测试已通过，待归档、上传与绑定。
+- 第八轮 PR 审查修复：iPad 横向列表详情布局中的 Provider 行与紧凑卡片共享同一隐私脱敏 helper，开启“Hide personal information”后，窗口尺寸切换不会暴露账号邮箱。新增 helper 回归测试；因此 build 211 成为唯一候选，完整测试已通过；归档、上传与绑定结果见下。
 - `bash Scripts/lint.sh lint` 通过：四语言全部 translated，356 个 source key 全部存在；`git diff --check`、CI policy 与 fork README guards 通过。
 - CloudKit Production 审计：相对最近公开 tag `v0.58.0.1-mobile.1.23.0`，`CloudConstants.swift`、record type/field/index/zone/subscription、`providerPayloadVersion` 与新增非 optional shared 字段审计均无输出；本轮没有新 schema，结论为 **NO_DEPLOY**。
+- 最终 PR 审查：PR #129 在 `f53882a1c0b1762f8882f14f070f520ee1a0ee8d` 获得 clean Codex review，0 个未解决线程；`Scripts/check_pr_review_gate.sh 129` 通过。PR 于 2026-09-14 合并到 `mobile-dev`，merge commit 为 `75a5d58420f55ef3e7b63dc22081eedc9c2a1d97`。
+- 最终 Archive：`/Volumes/StudioSSD/Developer/BuildScratch/CodexBar/Archives/CodexBarMobile-2.0.0-211.xcarchive`；归档主 App、Widget、Push Extension、Sync framework 均为 `2.0.0 (211)`，`codesign --verify --deep --strict` 通过，主 App CloudKit environment 为 `Production`。
+- 最终 TestFlight：Xcode 27 Content Delivery 返回 `Upload succeeded` / `EXPORT SUCCEEDED`。App Store Connect build `211`（ID `ff4b1e77-9c57-43d1-bab1-16a3116b5e9c`）已为 `VALID`、`usesNonExemptEncryption=false`，已绑定 App Store version `2.0.0`（ID `0dff79b3-74c6-4747-9022-34c0e70e81e9`）并自动出现在 `Internal` beta group。App Store version 保持 `PREPARE_FOR_SUBMISSION` / `MANUAL`，未创建 review submission。
 
 ## 数据与同步边界
 
