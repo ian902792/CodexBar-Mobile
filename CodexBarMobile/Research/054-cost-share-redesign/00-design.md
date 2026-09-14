@@ -1,7 +1,7 @@
 # 054 — Cost 分享编辑页与 Heatmap 模板
 
-状态：in-progress。设计与实现已完成，当前以 PR #129 的 `release/ios-2.0-app-store` 上 build 210 作为唯一候选；build 203 至 209 均为历史或已淘汰构建，不能作为本轮交付物。完整测试、lint 和 CloudKit Production NO_DEPLOY 审计已记录在 `01-testing-release.md`；当前仍待最终 clean review、合并、归档、TestFlight 上传与 App Store Connect 绑定。
-分支：最初实现来自 `feature/ios-cost-share-redesign`，从已完成 TestFlight 202 的本地 `3ecbcae2a` 派生，并保留 iPhone/iPad 底部导航规则；后续修复与发布准备均在 `release/ios-2.0-app-store` 进行。本轮沿用同一 2.0.0 更新说明，构建号为 210。
+状态：in-progress。设计与实现已完成，当前以 PR #129 的 `release/ios-2.0-app-store` 上 build 211 作为唯一候选；build 203 至 210 均为历史或已淘汰构建，不能作为本轮交付物。完整测试、lint 和 CloudKit Production NO_DEPLOY 审计已记录在 `01-testing-release.md`；当前仍待最终 clean review、合并、归档、TestFlight 上传与 App Store Connect 绑定。
+分支：最初实现来自 `feature/ios-cost-share-redesign`，从已完成 TestFlight 202 的本地 `3ecbcae2a` 派生，并保留 iPhone/iPad 底部导航规则；后续修复与发布准备均在 `release/ios-2.0-app-store` 进行。本轮沿用同一 2.0.0 更新说明，构建号为 211。
 
 ## 已审计的现状
 

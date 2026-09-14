@@ -76,6 +76,14 @@ struct ProviderUsageViewSubtitleTests {
         #expect(view.subtitleLine() == "alice@example.com")
     }
 
+    @Test("Adaptive provider rows honor the personal-info redaction policy")
+    func adaptiveProviderRowsHonorPersonalInfoRedaction() {
+        let email = "alice@example.com"
+        #expect(ProviderUsageView.visibleAccountEmail(email, hidePersonalInfo: false) == email)
+        #expect(ProviderUsageView.visibleAccountEmail(email, hidePersonalInfo: true) != email)
+        #expect(ProviderUsageView.visibleAccountEmail(email, hidePersonalInfo: true)?.isEmpty == false)
+    }
+
     @Test("Single-card + nil email → subtitle is nil (clean layout)")
     func singleCardWithoutEmail() {
         let view = ProviderUsageView(

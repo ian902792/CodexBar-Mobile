@@ -383,6 +383,7 @@ private struct ProviderListView: View {
     var selectedProviderID: String?
     let onSelect: (String) -> Void
     @Environment(\.mobileAdaptiveLayout) private var layout
+    @AppStorage(MobileSettingsKeys.hidePersonalInfo) private var hidePersonalInfo = false
     /// Local per-launch suppression of linkage prompts the user clicked
     /// "Keep separate" on. Persisted only across the current session —
     /// next launch re-evaluates so a user who reconsidered can confirm.
@@ -478,7 +479,10 @@ private struct ProviderListView: View {
                                         .frame(width: 10, height: 10)
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(group.representative.providerName).font(.headline)
-                                        if let email = group.representative.accountEmail {
+                                        if let email = ProviderUsageView.visibleAccountEmail(
+                                            group.representative.accountEmail,
+                                            hidePersonalInfo: self.hidePersonalInfo)
+                                        {
                                             Text(email).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                                         }
                                     }
