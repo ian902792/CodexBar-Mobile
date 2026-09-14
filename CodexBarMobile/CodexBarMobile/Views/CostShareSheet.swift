@@ -9,6 +9,7 @@ struct CostShareSheet: View {
     let isDemoMode: Bool
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var selectedPeriod: SharePeriod = .month
     @State private var selectedStyle: ShareCardStyleOption = .classic
     @State private var heatmapWindow: HeatmapShareWindow = .days365
@@ -53,7 +54,7 @@ struct CostShareSheet: View {
     var body: some View {
         NavigationStack {
             GeometryReader { proxy in
-                if proxy.size.width >= 700 {
+                if Self.usesSideBySideLayout(width: proxy.size.width, dynamicTypeSize: self.dynamicTypeSize) {
                     HStack(alignment: .top, spacing: 24) {
                         self.preview
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -283,6 +284,10 @@ struct CostShareSheet: View {
 
     static func heatmapColor(for selectedSeries: TokenActivitySeries?) -> Color {
         selectedSeries.map { ProviderColorPalette.color(for: $0.provider) } ?? .blue
+    }
+
+    static func usesSideBySideLayout(width: CGFloat, dynamicTypeSize: DynamicTypeSize) -> Bool {
+        width >= 700 && !dynamicTypeSize.isAccessibilitySize
     }
 
     @MainActor

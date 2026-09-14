@@ -37,7 +37,7 @@ struct HeatmapShareData {
     let color: Color
     let total: TokenActivityTotal
     let activeDays: Int
-    let peakTokens: Int?
+    let peak: TokenActivityTotal
 
     var calendarBlocks: [[Day]] {
         guard self.window == .days365 else { return [self.days] }
@@ -81,7 +81,9 @@ struct HeatmapShareData {
             value: known.isEmpty ? nil : sum,
             isLowerBound: !known.isEmpty && incomplete)
         self.activeDays = known.count(where: { $0 > 0 })
-        self.peakTokens = known.max()
+        self.peak = TokenActivityTotal(
+            value: known.max(),
+            isLowerBound: !known.isEmpty && incomplete)
     }
 
     private init(
@@ -91,7 +93,7 @@ struct HeatmapShareData {
         color: Color,
         total: TokenActivityTotal,
         activeDays: Int,
-        peakTokens: Int?)
+        peak: TokenActivityTotal)
     {
         self.sourceTitle = sourceTitle
         self.window = window
@@ -99,7 +101,7 @@ struct HeatmapShareData {
         self.color = color
         self.total = total
         self.activeDays = activeDays
-        self.peakTokens = peakTokens
+        self.peak = peak
     }
 
     static var preview: HeatmapShareData {
@@ -124,7 +126,7 @@ struct HeatmapShareData {
             color: .blue,
             total: .init(value: known.reduce(0, +), isLowerBound: true),
             activeDays: known.count(where: { $0 > 0 }),
-            peakTokens: known.max())
+            peak: .init(value: known.max(), isLowerBound: true))
     }
 }
 
@@ -166,7 +168,7 @@ struct HeatmapShareCardView: View {
                 HeatmapMetric(title: String(localized: "Active Days"), value: "\(self.data.activeDays)")
                 HeatmapMetric(
                     title: String(localized: "Peak Day"),
-                    value: self.data.peakTokens.map(Self.compactTokens) ?? "—")
+                    value: Self.compactTokens(self.data.peak))
             }
             .padding(.top, 14)
 
@@ -218,6 +220,12 @@ struct HeatmapShareCardView: View {
                 colors: [self.theme.background, self.data.color.opacity(self.theme.isDark ? 0.12 : 0.07)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing))
+    }
+
+    private static func compactTokens(_ total: TokenActivityTotal) -> String {
+        guard let value = total.value else { return "—" }
+        let prefix = total.isLowerBound ? "≥" : ""
+        return prefix + Self.compactTokens(value)
     }
 
     private static func compactTokens(_ value: Int) -> String {

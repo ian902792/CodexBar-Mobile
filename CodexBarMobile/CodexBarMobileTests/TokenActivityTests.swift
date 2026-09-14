@@ -217,7 +217,7 @@ struct TokenActivityTests {
         #expect(short.days.last?.dayKey == "2026-09-11")
         #expect(short.total == TokenActivityTotal(value: 300, isLowerBound: true))
         #expect(short.activeDays == 2)
-        #expect(short.peakTokens == 200)
+        #expect(short.peak == TokenActivityTotal(value: 200, isLowerBound: true))
         #expect(short.calendarBlocks.count == 1)
 
         let year = HeatmapShareData(
@@ -325,6 +325,10 @@ struct TokenActivityTests {
         #expect(abs(green - 68.0 / 255.0) < 0.001)
         #expect(abs(blue - 167.0 / 255.0) < 0.001)
         #expect(abs(alpha - 1) < 0.001)
+
+        #expect(CostShareSheet.usesSideBySideLayout(width: 700, dynamicTypeSize: .large))
+        #expect(!CostShareSheet.usesSideBySideLayout(width: 700, dynamicTypeSize: .accessibility1))
+        #expect(!CostShareSheet.usesSideBySideLayout(width: 699, dynamicTypeSize: .large))
     }
 
     @Test func `Known tokens remain available without a monetary cost`() {
