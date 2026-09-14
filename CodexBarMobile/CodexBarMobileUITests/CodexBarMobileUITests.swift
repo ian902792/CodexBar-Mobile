@@ -6,6 +6,198 @@ final class CodexBarMobileUITests: XCTestCase {
     }
 
     @MainActor
+    func testPhoneNavigationSafeAreaAndRotation() throws {
+        XCUIDevice.shared.orientation = .portrait
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let app = self.makeApp()
+        app.launchArguments += ["-cwlEnabled", "NO"]
+        app.launch()
+        try XCTSkipUnless(app.frame.width < 600, "Requires a compact phone")
+        self.captureNavigation(app, name: "Phone Usage portrait")
+        let provider = app.buttons["provider-group-codex"]
+        for _ in 0..<4 where !provider.isHittable {
+            app.swipeUp()
+        }
+        provider.tap()
+        XCTAssertTrue(app.navigationBars["Codex"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Cost"].tap()
+        app.tabBars.buttons["Usage"].tap()
+        XCTAssertTrue(app.navigationBars["Codex"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons.firstMatch.tap()
+        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+        // Select again after returning: catches a stale compact-column binding.
+        for _ in 0..<4 where !provider.isHittable {
+            app.swipeUp()
+        }
+        provider.tap()
+        XCTAssertTrue(app.navigationBars["Codex"].waitForExistence(timeout: 5))
+        XCUIDevice.shared.orientation = .landscapeLeft
+        self.waitForOrientation(app, landscape: true)
+        XCTAssertTrue(app.navigationBars["Codex"].exists)
+        XCTAssertFalse(app.buttons["adaptive-tab-cost"].exists)
+        self.captureNavigation(app, name: "Phone provider landscape")
+        XCUIDevice.shared.orientation = .portrait
+        self.waitForOrientation(app, landscape: false)
+        app.navigationBars.buttons.firstMatch.tap()
+        // Scroll completely to the end; final content must clear the tab buttons.
+        for _ in 0..<16 {
+            app.swipeUp(velocity: .fast)
+        }
+        let footer = app.otherElements["usage-scroll-footer"].firstMatch
+        XCTAssertTrue(footer.exists)
+        XCTAssertLessThanOrEqual(footer.frame.maxY, app.tabBars.buttons["Usage"].frame.minY)
+        self.captureNavigation(app, name: "Phone Usage bottom clearance")
+        app.tabBars.buttons["Setting"].tap()
+        app.staticTexts["Usage Setting"].tap()
+        XCTAssertTrue(app.switches["show-remaining-usage-toggle"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons.firstMatch.tap()
+        app.staticTexts["Cost Setting"].tap()
+        self.captureNavigation(app, name: "Phone Cost settings")
+        app.navigationBars.buttons.firstMatch.tap()
+        app.tabBars.buttons["Cost"].tap()
+        let overview = app.buttons["token-overview-link"]
+        for _ in 0..<8 where !overview.isHittable {
+            app.swipeUp()
+        }
+        overview.tap()
+        XCTAssertTrue(app.navigationBars["Token Activity"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Setting"].tap()
+        app.tabBars.buttons["Cost"].tap()
+        XCTAssertTrue(app.navigationBars["Token Activity"].exists)
+        app.navigationBars.buttons.firstMatch.tap()
+        self.captureNavigation(app, name: "Phone Cost restored")
+    }
+
+    @MainActor
+    func testTabletColumnsSearchAndSettingsSelectionSurviveResize() throws {
+        XCUIDevice.shared.orientation = .portrait
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let app = self.makeApp()
+        app.launchArguments += ["-cwlEnabled", "NO"]
+        app.launch()
+        try XCTSkipUnless(app.frame.width >= 600, "Requires an iPad")
+        let claude = app.buttons["provider-group-claude"]
+        let codex = app.buttons["provider-group-codex"]
+        XCTAssertTrue(claude.waitForExistence(timeout: 8))
+        XCTAssertEqual(claude.frame.minY, codex.frame.minY, accuracy: 4)
+        XCTAssertLessThan(claude.frame.maxX, codex.frame.minX)
+        self.assertBottomTabs(app)
+        self.captureNavigation(app, name: "iPad portrait two columns")
+        let search = app.searchFields.firstMatch
+        search.tap()
+        search.typeText("Codex")
+        XCTAssertTrue(codex.exists)
+        XCTAssertFalse(claude.exists)
+        codex.tap()
+        XCTAssertTrue(app.navigationBars["Codex"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5))
+        XCUIDevice.shared.orientation = .landscapeLeft
+        self.waitForOrientation(app, landscape: true)
+        self.assertBottomTabs(app)
+        XCTAssertTrue(app.navigationBars["Codex"].exists)
+        self.captureNavigation(app, name: "iPad landscape selected Codex")
+        app.searchFields.firstMatch.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["adaptive-tab-settings"].exists)
+        XCTAssertTrue(app.navigationBars["Codex"].exists)
+        XCTAssertTrue(app.buttons["provider-group-codex"].exists, "Keyboard must retain the sidebar and detail")
+        self.captureNavigation(app, name: "iPad landscape keyboard keeps navigation")
+        app.buttons["provider-group-codex"].tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5))
+        self.assertBottomTabs(app)
+        app.tabBars.buttons["Setting"].tap()
+        app.staticTexts["Usage Setting"].tap()
+        let toggle = app.switches["show-remaining-usage-toggle"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+        self.captureNavigation(app, name: "iPad landscape Settings detail")
+        XCUIDevice.shared.orientation = .portrait
+        self.waitForOrientation(app, landscape: false)
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+        self.captureNavigation(app, name: "iPad portrait retained Settings detail")
+        app.navigationBars.buttons.firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["Cost Setting"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Cost"].tap()
+        self.captureNavigation(app, name: "iPad portrait Cost")
+        XCUIDevice.shared.orientation = .landscapeLeft
+        self.waitForOrientation(app, landscape: true)
+        self.assertBottomTabs(app)
+        self.captureNavigation(app, name: "iPad landscape Cost")
+    }
+
+    @MainActor
+    private func assertBottomTabs(_ app: XCUIApplication) {
+        let usage = app.tabBars.buttons["Usage"]
+        let cost = app.tabBars.buttons["Cost"]
+        let setting = app.tabBars.buttons["Setting"]
+        XCTAssertTrue(setting.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["adaptive-tab-cost"].exists)
+        XCTAssertFalse(app.otherElements["adaptive-trailing-navigation"].exists)
+        XCTAssertGreaterThan(usage.frame.midY, app.frame.minY + app.frame.height * 0.8)
+        XCTAssertEqual(usage.frame.midY, cost.frame.midY, accuracy: 4)
+        XCTAssertEqual(cost.frame.midY, setting.frame.midY, accuracy: 4)
+        XCTAssertLessThan(usage.frame.midX, cost.frame.midX)
+        XCTAssertLessThan(cost.frame.midX, setting.frame.midX)
+    }
+
+    @MainActor
+    private func waitForOrientation(_ app: XCUIApplication, landscape: Bool) {
+        let predicate = NSPredicate { _, _ in
+            landscape ? app.frame.width > app.frame.height : app.frame.height > app.frame.width
+        }
+        expectation(for: predicate, evaluatedWith: app)
+        waitForExpectations(timeout: 8)
+    }
+
+    @MainActor
+    private func captureNavigation(_ app: XCUIApplication, name: String) {
+        // Capture the display after the compositor finishes orientation changes;
+        // app.screenshot() can crop with stale geometry immediately after rotation.
+        Thread.sleep(forTimeInterval: 1)
+        let shot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        shot.name = name
+        shot.lifetime = .keepAlways
+        add(shot)
+    }
+
+    @MainActor
+    func testRoomyNavigationPreservesProviderThroughPortraitResize() throws {
+        let app = self.makeApp()
+        app.launchArguments += ["-cwlEnabled", "NO"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        defer { XCUIDevice.shared.orientation = .portrait }
+        app.launch()
+        try XCTSkipUnless(min(app.frame.width, app.frame.height) >= 600, "Requires a roomy simulator window")
+        let landscape = NSPredicate { _, _ in app.frame.width > app.frame.height }
+        expectation(for: landscape, evaluatedWith: app)
+        waitForExpectations(timeout: 5)
+        self.assertBottomTabs(app)
+        let provider = app.buttons["provider-group-codex"]
+        XCTAssertTrue(provider.waitForExistence(timeout: 5))
+        provider.tap()
+        XCTAssertTrue(app.navigationBars["Codex"].waitForExistence(timeout: 5))
+        XCUIDevice.shared.orientation = .portrait
+        let portrait = NSPredicate { _, _ in app.frame.height > app.frame.width }
+        expectation(for: portrait, evaluatedWith: app)
+        waitForExpectations(timeout: 5)
+        XCTAssertFalse(app.buttons["adaptive-tab-cost"].exists)
+        XCTAssertTrue(app.navigationBars["Codex"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.tabBars.buttons["Setting"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Setting"].tap()
+        app.staticTexts["Usage Setting"].tap()
+        XCTAssertTrue(app.switches["show-remaining-usage-toggle"].waitForExistence(timeout: 5))
+        XCUIDevice.shared.orientation = .landscapeLeft
+        expectation(for: landscape, evaluatedWith: app)
+        waitForExpectations(timeout: 5)
+        self.assertBottomTabs(app)
+        app.tabBars.buttons["Cost"].tap()
+        XCTAssertTrue(app.staticTexts["Overview"].waitForExistence(timeout: 5))
+        let shot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        shot.name = "Generic iPad resize validation - not a Duo device"
+        shot.lifetime = .keepAlways
+        add(shot)
+    }
+
+    @MainActor
     func testUsageSettingsSwitchBetweenUsedAndRemainingPercentages() {
         let app = self.makeApp()
         app.launch()
@@ -52,12 +244,69 @@ final class CodexBarMobileUITests: XCTestCase {
     }
 
     @MainActor
+    func testCostShareEditorUsesPreviewFirstTemplatesAndHeatmapControls() {
+        let app = self.makeApp()
+        app.launch()
+        app.tabBars.buttons["Cost"].tap()
+        let share = app.buttons["cost-share-button"]
+        XCTAssertTrue(share.waitForExistence(timeout: 10))
+        share.tap()
+
+        XCTAssertTrue(app.navigationBars["Create Share Card"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.otherElements["share-card-preview"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["share-style-classic"].exists)
+        XCTAssertTrue(app.buttons["share-style-cyber"].exists)
+        let heatmap = app.buttons["share-style-heatmap"]
+        XCTAssertTrue(heatmap.exists)
+        XCTAssertFalse(app.segmentedControls.firstMatch.exists)
+
+        heatmap.tap()
+        XCTAssertTrue(app.buttons["share-range-picker"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.buttons["share-provider-picker"].exists)
+        let action = app.buttons["share-card-action"]
+        let enabled = NSPredicate(format: "isEnabled == true")
+        expectation(for: enabled, evaluatedWith: action)
+        waitForExpectations(timeout: 8)
+        let shot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        shot.name = "Cost share editor - Heatmap"
+        shot.lifetime = .keepAlways
+        add(shot)
+        action.tap()
+        XCTAssertTrue(app.otherElements["ActivityListView"].waitForExistence(timeout: 8))
+    }
+
+    @MainActor
+    func testCostShareEditorUsesTwoColumnsOnWideIPad() throws {
+        XCUIDevice.shared.orientation = .landscapeLeft
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let app = self.makeApp()
+        app.launch()
+        try XCTSkipUnless(app.frame.width >= 700, "Requires a wide iPad window")
+
+        app.tabBars.buttons["Cost"].tap()
+        let share = app.buttons["cost-share-button"]
+        XCTAssertTrue(share.waitForExistence(timeout: 10))
+        share.tap()
+
+        let preview = app.otherElements["share-card-preview"]
+        let period = app.buttons["share-period-picker"]
+        XCTAssertTrue(preview.waitForExistence(timeout: 5))
+        XCTAssertTrue(period.waitForExistence(timeout: 5))
+        XCTAssertLessThan(preview.frame.maxX, period.frame.minX)
+        XCTAssertTrue(app.buttons["share-card-action"].isHittable)
+
+        let shot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        shot.name = "Cost share editor - iPad landscape"
+        shot.lifetime = .keepAlways
+        add(shot)
+    }
+
+    @MainActor
     func testSpringBoardWidgetCanSelectOverview() throws {
         try self.runSpringBoardWidgetModeSelection(
             name: "Overview",
             pickerLabels: ["Overview", "概览", "概覽", "概要"],
-            pickerRowY: 0.44
-        )
+            pickerRowY: 0.44)
     }
 
     @MainActor
@@ -65,8 +314,7 @@ final class CodexBarMobileUITests: XCTestCase {
         try self.runSpringBoardWidgetModeSelection(
             name: "Provider Focus",
             pickerLabels: ["Provider Focus", "提供商焦点", "供應商焦點", "プロバイダーフォーカス"],
-            pickerRowY: 0.50
-        )
+            pickerRowY: 0.50)
     }
 
     @MainActor
@@ -74,8 +322,7 @@ final class CodexBarMobileUITests: XCTestCase {
         try self.runSpringBoardWidgetModeSelection(
             name: "Today Cost",
             pickerLabels: ["Today Cost", "今日成本", "今日成本", "今日のコスト"],
-            pickerRowY: 0.56
-        )
+            pickerRowY: 0.56)
     }
 
     @MainActor
@@ -83,19 +330,19 @@ final class CodexBarMobileUITests: XCTestCase {
         try self.runSpringBoardWidgetModeSelection(
             name: "Sync Health",
             pickerLabels: ["Sync Health", "同步健康", "同步健康", "同期の健全性"],
-            pickerRowY: 0.64
-        )
+            pickerRowY: 0.64)
     }
 
     @MainActor
     private func runSpringBoardWidgetModeSelection(
         name: String,
         pickerLabels: [String],
-        pickerRowY: CGFloat
-    ) throws {
+        pickerRowY: CGFloat) throws
+    {
         let environment = ProcessInfo.processInfo.environment
         guard environment["UI_TEST_SPRINGBOARD_WIDGET"] == "1"
-            || environment["TEST_RUNNER_UI_TEST_SPRINGBOARD_WIDGET"] == "1" else {
+            || environment["TEST_RUNNER_UI_TEST_SPRINGBOARD_WIDGET"] == "1"
+        else {
             throw XCTSkip("Requires a simulator Home Screen with a placed CodexBar widget.")
         }
 
@@ -143,7 +390,8 @@ final class CodexBarMobileUITests: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(overview.waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["Back to today"].exists)
+        XCTAssertTrue(app.scrollViews["token-overview-heatmap"].exists)
+        XCTAssertFalse(app.buttons["Show all providers"].exists)
         let summary = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         summary.name = "Cost combined token summary"
         summary.lifetime = .keepAlways
@@ -162,7 +410,7 @@ final class CodexBarMobileUITests: XCTestCase {
         before.name = "Token cells before selection"
         before.lifetime = .keepAlways
         add(before)
-        day.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        day.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(forDuration: 0.7)
         let selected = app.staticTexts["selected-token-day"]
         for _ in 0..<3 where !selected.exists {
             app.swipeUp()
@@ -193,9 +441,11 @@ final class CodexBarMobileUITests: XCTestCase {
         let move = max(0, title.frame.minY - 130) / app.frame.height
         if move > 0 {
             app.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.8))
-                .press(forDuration: 0.1,
+                .press(
+                    forDuration: 0.1,
                     thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: max(0.15, 0.8 - move))),
-                    withVelocity: .slow, thenHoldForDuration: 0.5)
+                    withVelocity: .slow,
+                    thenHoldForDuration: 0.5)
         }
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .gregorian)
@@ -207,9 +457,11 @@ final class CodexBarMobileUITests: XCTestCase {
         let originalX = today.frame.midX
         let y = today.frame.midY / app.frame.height
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: y))
-            .press(forDuration: 0.1,
+            .press(
+                forDuration: 0.1,
                 thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: y)),
-                withVelocity: .slow, thenHoldForDuration: 0.5)
+                withVelocity: .slow,
+                thenHoldForDuration: 0.5)
         XCTAssertTrue(!today.isHittable || today.frame.midX > originalX + 100)
         let history = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         history.name = "2.0 Provider older history after horizontal swipe"
@@ -222,7 +474,9 @@ final class CodexBarMobileUITests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
         let serviceMix = app.staticTexts["Codex Service Mix"]
-        for _ in 0..<5 where !serviceMix.isHittable { app.swipeUp() }
+        for _ in 0..<5 where !serviceMix.isHittable {
+            app.swipeUp()
+        }
         XCTAssertTrue(serviceMix.exists)
     }
 
@@ -270,18 +524,15 @@ final class CodexBarMobileUITests: XCTestCase {
 
         let editWidget = self.firstExistingElement(
             in: springboard,
-            labels: ["Edit Widget", "编辑小组件", "編輯小工具", "ウィジェットを編集"]
-        )
+            labels: ["Edit Widget", "编辑小组件", "編輯小工具", "ウィジェットを編集"])
         XCTAssertTrue(editWidget.waitForExistence(timeout: 5), "SpringBoard did not expose the Edit Widget action.")
         editWidget.tap()
 
         let configurationExtension = XCUIApplication(
-            bundleIdentifier: "com.apple.WorkflowUI.WidgetConfigurationExtension"
-        )
+            bundleIdentifier: "com.apple.WorkflowUI.WidgetConfigurationExtension")
         XCTAssertTrue(
             configurationExtension.wait(for: .runningForeground, timeout: 5),
-            "SpringBoard did not foreground the widget configuration extension."
-        )
+            "SpringBoard did not foreground the widget configuration extension.")
     }
 
     @MainActor
@@ -289,13 +540,13 @@ final class CodexBarMobileUITests: XCTestCase {
         on springboard: XCUIApplication,
         name: String,
         pickerLabels: [String],
-        pickerRowY: CGFloat
-    ) {
+        pickerRowY: CGFloat)
+    {
         let configurationExtension = XCUIApplication(
-            bundleIdentifier: "com.apple.WorkflowUI.WidgetConfigurationExtension"
-        )
-        if !tapFirstExistingPickerLabel(in: configurationExtension, labels: pickerLabels),
-           !tapFirstExistingPickerLabel(in: springboard, labels: pickerLabels) {
+            bundleIdentifier: "com.apple.WorkflowUI.WidgetConfigurationExtension")
+        if !self.tapFirstExistingPickerLabel(in: configurationExtension, labels: pickerLabels),
+           !self.tapFirstExistingPickerLabel(in: springboard, labels: pickerLabels)
+        {
             springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.46, dy: pickerRowY)).tap()
         }
         Thread.sleep(forTimeInterval: 1.0)

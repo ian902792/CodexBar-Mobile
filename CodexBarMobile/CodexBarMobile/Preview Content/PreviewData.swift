@@ -400,13 +400,13 @@ enum PreviewData {
 
     @MainActor
     static func makeSyncedUsageData() -> SyncedUsageData {
-        let data = SyncedUsageData()
+        let data = SyncedUsageData(hydrateFromPersistence: false)
         data.snapshot = self.sampleSnapshot
         return data
     }
 
     @MainActor
     static func makeEmptyUsageData() -> SyncedUsageData {
-        SyncedUsageData()
+        SyncedUsageData(hydrateFromPersistence: false)
     }
 }

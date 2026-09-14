@@ -23,15 +23,34 @@ enum CostChartStyle: String, CaseIterable, Identifiable {
     }
 }
 
-private enum MobileRootTab: Hashable {
+enum MobileRootTab: String, CaseIterable, Hashable {
     case usage
     case cost
     case settings
+
+    var title: String {
+        switch self {
+        case .usage: String(localized: "Usage")
+        case .cost: String(localized: "Cost")
+        case .settings: String(localized: "Setting")
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .usage: "chart.bar.fill"
+        case .cost: "dollarsign.circle.fill"
+        case .settings: "gearshape"
+        }
+    }
 }
 
 struct ContentView: View {
     let usageData: SyncedUsageData
+    private let isLayoutPreview: Bool
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var isDemoMode = false
+    @State private var layoutContainerSize: CGSize = .zero
     @State private var selectedTab: MobileRootTab
     @State private var isWidgetSettingsPresented = false
     /// Shared evaluation instant for Usage-list/detail cost surfaces. It moves
@@ -42,10 +61,20 @@ struct ContentView: View {
     @State private var readerTimeZoneIdentifier = TimeZone.current.identifier
     @AppStorage("onboardingSeenVersion") private var onboardingSeenVersion = ""
 
-    init(usageData: SyncedUsageData) {
+    init(usageData: SyncedUsageData, previewTab: MobileRootTab? = nil) {
         self.usageData = usageData
-        _selectedTab = State(initialValue: UserDefaults.standard
-            .bool(forKey: MobileSettingsKeys.openCostByDefault) ? .cost : .usage)
+        self.isLayoutPreview = previewTab != nil
+        _isDemoMode = State(initialValue: previewTab != nil && usageData.snapshot != nil)
+        _selectedTab = State(initialValue: previewTab ?? (UserDefaults.standard
+                .bool(forKey: MobileSettingsKeys.openCostByDefault) ? .cost : .usage))
+    }
+
+    private var allowsPreviewTrailingNavigation: Bool {
+        #if DEBUG
+        self.isLayoutPreview
+        #else
+        false
+        #endif
     }
 
     private var currentVersion: String {
@@ -53,7 +82,7 @@ struct ContentView: View {
     }
 
     private var shouldShowOnboarding: Bool {
-        self.onboardingSeenVersion != self.currentVersion
+        !self.isLayoutPreview && self.onboardingSeenVersion != self.currentVersion
     }
 
     private var costSourceTimeZoneIdentifiers: Set<String> {
@@ -68,27 +97,51 @@ struct ContentView: View {
     }
 
     var body: some View {
-        TabView(selection: self.$selectedTab) {
-            UsageTab(
-                usageData: self.usageData,
-                isDemoMode: self.$isDemoMode,
-                costReferenceDate: self.costReferenceDate)
-                .tag(MobileRootTab.usage)
-                .tabItem {
-                    Label("Usage", systemImage: "chart.bar.fill")
+        GeometryReader { geometry in
+            let layout = MobileAdaptiveLayout(
+                width: self.layoutContainerSize == .zero ? geometry.size.width : self.layoutContainerSize.width,
+                height: self.layoutContainerSize == .zero ? geometry.size.height : self.layoutContainerSize.height,
+                largeText: self.dynamicTypeSize.isAccessibilitySize,
+                allowsTrailingNavigation: self.allowsPreviewTrailingNavigation)
+            HStack(spacing: 0) {
+                self.tabs(trailingNavigation: layout.usesTrailingNavigation)
+                    .environment(\.horizontalSizeClass, .compact)
+                if layout.usesTrailingNavigation {
+                    VStack(spacing: 12) {
+                        ForEach(MobileRootTab.allCases, id: \.self) { tab in
+                            Button {
+                                self.selectedTab = tab
+                            } label: {
+                                Label(tab.title, systemImage: tab.symbol)
+                                    .labelStyle(.iconOnly)
+                                    .font(.title2)
+                                    .frame(minWidth: 52, minHeight: 52)
+                                    .background(
+                                        self.selectedTab == tab ? Color.accentColor.opacity(0.16) : .clear,
+                                        in: RoundedRectangle(cornerRadius: 16))
+                            }
+                            .accessibilityLabel(tab.title)
+                            .accessibilityAddTraits(self.selectedTab == tab ? .isSelected : [])
+                            .accessibilityIdentifier("adaptive-tab-" + tab.rawValue)
+                        }
+                    }
+                    .padding(8)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
+                    .padding(.trailing, 12)
+                    .accessibilityElement(children: .contain)
+                    .accessibilityIdentifier("adaptive-trailing-navigation")
                 }
-
-            CostTab(usageData: self.usageData, isDemoMode: self.$isDemoMode)
-                .tag(MobileRootTab.cost)
-                .tabItem {
-                    Label("Cost", systemImage: "dollarsign.circle.fill")
-                }
-
-            SettingsTab(usageData: self.usageData)
-                .tag(MobileRootTab.settings)
-                .tabItem {
-                    Label("Setting", systemImage: "gearshape")
-                }
+            }
+            .environment(\.mobileAdaptiveLayout, layout)
+        }
+        .background {
+            // Measure the window proposal without keyboard occlusion. Content still
+            // observes the normal keyboard safe area; only layout selection ignores it.
+            GeometryReader { _ in
+                Color.clear
+                    .onGeometryChange(for: CGSize.self) { $0.size } action: { self.layoutContainerSize = $0 }
+            }
+            .ignoresSafeArea(.keyboard)
         }
         .modifier(TabBarMinimizeModifier())
         .safeAreaInset(edge: .top) {
@@ -136,6 +189,34 @@ struct ContentView: View {
                         }
                 }
             }
+    }
+
+    private func tabs(trailingNavigation: Bool) -> some View {
+        TabView(selection: self.$selectedTab) {
+            UsageTab(
+                usageData: self.usageData,
+                isDemoMode: self.$isDemoMode,
+                costReferenceDate: self.costReferenceDate)
+                .toolbar(trailingNavigation ? .hidden : .visible, for: .tabBar)
+                .tag(MobileRootTab.usage)
+                .tabItem {
+                    Label("Usage", systemImage: "chart.bar.fill")
+                }
+
+            CostTab(usageData: self.usageData, isDemoMode: self.$isDemoMode)
+                .toolbar(trailingNavigation ? .hidden : .visible, for: .tabBar)
+                .tag(MobileRootTab.cost)
+                .tabItem {
+                    Label("Cost", systemImage: "dollarsign.circle.fill")
+                }
+
+            SettingsTab(usageData: self.usageData)
+                .toolbar(trailingNavigation ? .hidden : .visible, for: .tabBar)
+                .tag(MobileRootTab.settings)
+                .tabItem {
+                    Label("Setting", systemImage: "gearshape")
+                }
+        }
     }
 
     @MainActor
@@ -207,6 +288,9 @@ private struct UsageTab: View {
     let usageData: SyncedUsageData
     @Binding var isDemoMode: Bool
     let costReferenceDate: Date
+    @Environment(\.mobileAdaptiveLayout) private var layout
+    @State private var selectedProviderID: String?
+    @State private var compactColumn: NavigationSplitViewColumn = .sidebar
 
     private var displaySnapshot: SyncedUsageSnapshot? {
         if self.isDemoMode {
@@ -216,7 +300,7 @@ private struct UsageTab: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationSplitView(preferredCompactColumn: self.$compactColumn) {
             Group {
                 if let snapshot = self.displaySnapshot {
                     if MockProviderDetector.filteredProviders(from: snapshot)
@@ -231,7 +315,12 @@ private struct UsageTab: View {
                             snapshot: snapshot,
                             usageData: self.usageData,
                             isDemoMode: self.isDemoMode,
-                            costReferenceDate: self.costReferenceDate)
+                            costReferenceDate: self.costReferenceDate,
+                            selectedProviderID: self.selectedProviderID,
+                            onSelect: { id in
+                                self.selectedProviderID = id
+                                self.compactColumn = .detail
+                            })
                     }
                 } else {
                     OnboardingView(onDemo: { self.isDemoMode = true })
@@ -251,7 +340,36 @@ private struct UsageTab: View {
                     }
                 }
             }
+        } detail: {
+            NavigationStack {
+                if let snapshot = self.displaySnapshot {
+                    let groups = MockProviderDetector.filteredProviders(from: snapshot)
+                        .filter { !$0.isProviderLevelCostEnvelope }.groupedByProvider()
+                    if let group = groups.first(where: { $0.providerID == self.selectedProviderID })
+                        ?? (self.layout.usesListDetail ? groups.first : nil)
+                    {
+                        ProviderDetailView(
+                            group: group,
+                            costReferenceDate: self.costReferenceDate,
+                            sourceSnapshots: self.usageData.deviceSnapshots,
+                            isDemoMode: self.isDemoMode)
+                            .id(group.providerID)
+                    }
+                }
+            }
         }
+        .task(id: self.layout.usesListDetail) {
+            if self.layout.usesListDetail, self.selectedProviderID == nil,
+               let snapshot = self.displaySnapshot,
+               let first = MockProviderDetector.filteredProviders(from: snapshot)
+                   .filter({ !$0.isProviderLevelCostEnvelope }).groupedByProvider().first
+            {
+                self.selectedProviderID = first.providerID
+                self.compactColumn = .detail
+            }
+        }
+        .navigationSplitViewStyle(.balanced)
+        .environment(\.horizontalSizeClass, self.layout.usesListDetail ? .regular : .compact)
     }
 }
 
@@ -262,6 +380,10 @@ private struct ProviderListView: View {
     let usageData: SyncedUsageData
     let isDemoMode: Bool
     let costReferenceDate: Date
+    var selectedProviderID: String?
+    let onSelect: (String) -> Void
+    @Environment(\.mobileAdaptiveLayout) private var layout
+    @AppStorage(MobileSettingsKeys.hidePersonalInfo) private var hidePersonalInfo = false
     /// Local per-launch suppression of linkage prompts the user clicked
     /// "Keep separate" on. Persisted only across the current session —
     /// next launch re-evaluates so a user who reconsidered can confirm.
@@ -271,6 +393,7 @@ private struct ProviderListView: View {
     /// Filters the Usage provider list by name / ID. Helps when many
     /// providers are synced (20+) and scrolling to find one is tedious.
     @State private var searchText = ""
+    @State private var isSearching = false
 
     var body: some View {
         // Drop extinct mock zombies before any rendering so duplicate
@@ -321,58 +444,90 @@ private struct ProviderListView: View {
         return ScrollView {
             LazyVStack(spacing: 16) {
                 MockProviderBanner(snapshot: self.snapshot)
-                ForEach(filteredGroups) { group in
-                    // Within-group linkage candidate: surface on the
-                    // group row if ANY account in the group has one
-                    // (typically the legacy/missing-identity card).
-                    // User confirms once, the underlying union-find
-                    // collapses the candidate pair into one snapshot,
-                    // and on next render the group shrinks by one.
-                    let candidate: MultiAccountLinkageCandidate? = {
-                        for account in group.accounts {
-                            if let c = candidatesByLegacyKey[account.cardIdentityKey],
-                               !self.dismissedCandidateKeys.contains(c.hashKey)
-                            {
-                                return c
+                LazyVGrid(
+                    columns: Array(
+                        repeating: GridItem(.flexible(), spacing: 16, alignment: .top),
+                        count: self.layout.providerColumns),
+                    alignment: .leading,
+                    spacing: 16)
+                {
+                    ForEach(filteredGroups) { group in
+                        // Within-group linkage candidate: surface on the
+                        // group row if ANY account in the group has one
+                        // (typically the legacy/missing-identity card).
+                        // User confirms once, the underlying union-find
+                        // collapses the candidate pair into one snapshot,
+                        // and on next render the group shrinks by one.
+                        let candidate: MultiAccountLinkageCandidate? = {
+                            for account in group.accounts {
+                                if let c = candidatesByLegacyKey[account.cardIdentityKey],
+                                   !self.dismissedCandidateKeys.contains(c.hashKey)
+                                {
+                                    return c
+                                }
+                            }
+                            return nil
+                        }()
+                        let activeLinkage = activeLinkagesByProviderID[group.providerID]?.first
+                        Button {
+                            self.isSearching = false
+                            self.onSelect(group.providerID)
+                        } label: {
+                            if self.layout.usesListDetail, candidate == nil, activeLinkage == nil {
+                                HStack(spacing: 10) {
+                                    Circle().fill(ProviderColorPalette.color(for: group.representative))
+                                        .frame(width: 10, height: 10)
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(group.representative.providerName).font(.headline)
+                                        if let email = ProviderUsageView.visibleAccountEmail(
+                                            group.representative.accountEmail,
+                                            hidePersonalInfo: self.hidePersonalInfo)
+                                        {
+                                            Text(email).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                                        }
+                                    }
+                                    Spacer()
+                                    if self.selectedProviderID == group.providerID {
+                                        Image(systemName: "checkmark").foregroundStyle(Color.accentColor)
+                                    }
+                                }
+                                .padding(12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(
+                                    self.selectedProviderID == group.providerID
+                                        ? Color.accentColor.opacity(0.12) : Color.secondary.opacity(0.06),
+                                    in: RoundedRectangle(cornerRadius: 12))
+                                .contentShape(Rectangle())
+                            } else {
+                                ProviderUsageView(
+                                    provider: group.representative,
+                                    costReferenceDate: self.costReferenceDate,
+                                    duplicateOrdinal: nil,
+                                    accountCount: group.hasMultipleAccounts ? group.accounts.count : nil,
+                                    linkageCandidate: candidate,
+                                    activeLinkage: activeLinkage,
+                                    onConfirmMerge: { c in
+                                        Task { @MainActor in
+                                            await self.usageData.confirmLinkage(
+                                                providerID: c.named.providerID,
+                                                linkedIdentifiers: c.linkedIdentifiers)
+                                        }
+                                    },
+                                    onDismissMergeCandidate: { c in
+                                        self.dismissedCandidateKeys.insert(c.hashKey)
+                                    },
+                                    onRevokeLinkage: { linkage in
+                                        Task { @MainActor in
+                                            await self.usageData.revokeLinkage(
+                                                providerID: linkage.providerID,
+                                                linkedIdentifiers: linkage.linkedIdentifiers)
+                                        }
+                                    })
                             }
                         }
-                        return nil
-                    }()
-                    let activeLinkage = activeLinkagesByProviderID[group.providerID]?.first
-                    NavigationLink {
-                        ProviderDetailView(
-                            group: group,
-                            costReferenceDate: self.costReferenceDate,
-                            sourceSnapshots: self.usageData.deviceSnapshots,
-                            isDemoMode: self.isDemoMode)
-                    } label: {
-                        ProviderUsageView(
-                            provider: group.representative,
-                            costReferenceDate: self.costReferenceDate,
-                            duplicateOrdinal: nil,
-                            accountCount: group.hasMultipleAccounts ? group.accounts.count : nil,
-                            linkageCandidate: candidate,
-                            activeLinkage: activeLinkage,
-                            onConfirmMerge: { c in
-                                Task { @MainActor in
-                                    await self.usageData.confirmLinkage(
-                                        providerID: c.named.providerID,
-                                        linkedIdentifiers: c.linkedIdentifiers)
-                                }
-                            },
-                            onDismissMergeCandidate: { c in
-                                self.dismissedCandidateKeys.insert(c.hashKey)
-                            },
-                            onRevokeLinkage: { linkage in
-                                Task { @MainActor in
-                                    await self.usageData.revokeLinkage(
-                                        providerID: linkage.providerID,
-                                        linkedIdentifiers: linkage.linkedIdentifiers)
-                                }
-                            })
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("provider-group-\(group.providerID)")
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("provider-group-\(group.providerID)")
                 }
 
                 if filteredGroups.isEmpty {
@@ -392,6 +547,8 @@ private struct ProviderListView: View {
                 } else {
                     SyncStatusBar(usageData: self.usageData)
                         .padding(.top, 4)
+                        .accessibilityElement(children: .contain)
+                        .accessibilityIdentifier("usage-scroll-footer")
                 }
             }
             .padding(.horizontal, 20)
@@ -404,6 +561,7 @@ private struct ProviderListView: View {
         .modifier(SoftScrollEdgeModifier())
         .searchable(
             text: self.$searchText,
+            isPresented: self.$isSearching,
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: Text("Search providers"))
     }
@@ -834,12 +992,20 @@ private struct CostTab: View {
                         } label: {
                             Image(systemName: "square.and.arrow.up")
                         }
+                        .accessibilityLabel(String(localized: "Create Share Card"))
+                        .accessibilityIdentifier("cost-share-button")
                     }
                 }
             }
-            .sheet(isPresented: self.$showShareSheet) {
+            .fullScreenCover(isPresented: self.$showShareSheet) {
                 if let insights = self.currentInsights {
-                    CostShareSheet(insights: insights)
+                    CostShareSheet(
+                        insights: insights,
+                        providers: self.isDemoMode ? insights.providerRows.map(\.provider)
+                            : self.displaySnapshot.map { MockProviderDetector.filteredProviders(from: $0) } ?? [],
+                        sourceSnapshots: self.usageData.deviceSnapshots,
+                        useLedger: self.shouldUseLedger,
+                        isDemoMode: self.isDemoMode)
                 }
             }
             .task(id: self.ledgerRefreshSignature) {
@@ -873,6 +1039,7 @@ private struct CostTab: View {
 }
 
 private struct CostDashboardView: View {
+    @Environment(\.mobileAdaptiveLayout) private var layout
     let insights: CostDashboardInsights
     let usageData: SyncedUsageData
     let isDemoMode: Bool
@@ -888,38 +1055,49 @@ private struct CostDashboardView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 MockProviderBanner(snapshot: self.usageData.snapshot)
-                self.summarySection
+                let columns = self.layout.usesTwoColumns
+                    ? AnyLayout(HStackLayout(alignment: .top, spacing: 20))
+                    : AnyLayout(VStackLayout(alignment: .leading, spacing: 18))
+                columns {
+                    VStack(alignment: .leading, spacing: 18) {
+                        self.summarySection
 
-                if !self.insights.spendProviderRows.isEmpty {
-                    self.contributionSection(
-                        title: "Provider Share",
-                        subtitle: self.providerShareSubtitle,
-                        rows: self.insights.spendProviderRows.map {
-                            // `identityOverride: $0.id` carries the
-                            // `providerID|accountEmail` composite key so
-                            // multi-account scenarios (e.g. two Codex
-                            // accounts surfaced by Mac ≥ 0.25 once email
-                            // extraction lands) render as distinct rows
-                            // instead of one row drawn twice.
-                            CostBreakdownRow(
-                                label: $0.provider.providerName,
-                                amountUSD: $0.thirtyDayCost,
-                                subtitle: self.providerSubtitle(for: $0),
-                                color: providerTint(for: $0.provider),
-                                identityOverride: $0.id)
-                        },
-                        total: self.insights.spendProviderRows.reduce(0) { $0 + $1.thirtyDayCost })
-                }
+                        if !self.insights.spendProviderRows.isEmpty {
+                            self.contributionSection(
+                                title: "Provider Share",
+                                subtitle: self.providerShareSubtitle,
+                                rows: self.insights.spendProviderRows.map {
+                                    // `identityOverride: $0.id` carries the
+                                    // `providerID|accountEmail` composite key so
+                                    // multi-account scenarios (e.g. two Codex
+                                    // accounts surfaced by Mac ≥ 0.25 once email
+                                    // extraction lands) render as distinct rows
+                                    // instead of one row drawn twice.
+                                    CostBreakdownRow(
+                                        label: $0.provider.providerName,
+                                        amountUSD: $0.thirtyDayCost,
+                                        subtitle: self.providerSubtitle(for: $0),
+                                        color: providerTint(for: $0.provider),
+                                        identityOverride: $0.id)
+                                },
+                                total: self.insights.spendProviderRows.reduce(0) { $0 + $1.thirtyDayCost })
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                    VStack(alignment: .leading, spacing: 18) {
+                        TokenActivitySection(
+                            providers: self.isDemoMode ? self.insights.providerRows.map(\.provider)
+                                : self.usageData.snapshot
+                                .map { MockProviderDetector.filteredProviders(from: $0) } ?? [],
+                            sourceSnapshots: self.usageData.deviceSnapshots,
+                            isOverview: true,
+                            isDemoMode: self.isDemoMode)
 
-                TokenActivitySection(
-                    providers: self.isDemoMode ? self.insights.providerRows.map(\.provider)
-                        : self.usageData.snapshot.map { MockProviderDetector.filteredProviders(from: $0) } ?? [],
-                    sourceSnapshots: self.usageData.deviceSnapshots,
-                    isOverview: true,
-                    isDemoMode: self.isDemoMode)
-
-                if !self.insights.costDailyPoints.isEmpty {
-                    self.trendSection
+                        if !self.insights.costDailyPoints.isEmpty {
+                            self.trendSection
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
 
                 // Subscription Utilization — independent section
@@ -950,6 +1128,8 @@ private struct CostDashboardView: View {
                 } else {
                     SyncStatusBar(usageData: self.usageData)
                         .padding(.top, 4)
+                        .accessibilityElement(children: .contain)
+                        .accessibilityIdentifier("cost-scroll-footer")
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
@@ -2449,12 +2629,16 @@ private func providerTint(for provider: ProviderUsageSnapshot?) -> Color {
 // MARK: - Setting Tab
 
 private struct SettingsTab: View {
+    private enum Destination: Hashable { case about, notes, usage, cost, widgets, developer }
+    @Environment(\.mobileAdaptiveLayout) private var layout
+    @State private var selection: Destination?
+    @State private var compactColumn: NavigationSplitViewColumn = .sidebar
     let usageData: SyncedUsageData
     @State private var showingSetupGuide = false
 
     var body: some View {
-        NavigationStack {
-            List {
+        NavigationSplitView(preferredCompactColumn: self.$compactColumn) {
+            List(selection: self.$selection) {
                 Section {
                     Button {
                         self.showingSetupGuide = true
@@ -2466,18 +2650,14 @@ private struct SettingsTab: View {
                     }
                     .tint(.primary)
 
-                    NavigationLink {
-                        AboutSyncDetailView(usageData: self.usageData)
-                    } label: {
+                    NavigationLink(value: Destination.about) {
                         SettingSummaryRow(
                             title: "About & Sync",
                             symbolName: "iphone.and.arrow.forward",
                             summary: "\(String(localized: "iPhone")) \(self.mobileVersionSummary) · \(String(localized: "Mac")) \(self.macVersionSummary)")
                     }
 
-                    NavigationLink {
-                        ReleaseNotesView()
-                    } label: {
+                    NavigationLink(value: Destination.notes) {
                         SettingSummaryRow(
                             title: "Release Notes",
                             symbolName: "text.document",
@@ -2486,27 +2666,21 @@ private struct SettingsTab: View {
                 }
 
                 Section {
-                    NavigationLink {
-                        UsageSettingsView()
-                    } label: {
+                    NavigationLink(value: Destination.usage) {
                         SettingSummaryRow(
                             title: "Usage Setting",
                             symbolName: "chart.bar.fill",
                             summary: String(localized: "Configure the Usage page"))
                     }
 
-                    NavigationLink {
-                        CostSettingsView(usageData: self.usageData)
-                    } label: {
+                    NavigationLink(value: Destination.cost) {
                         SettingSummaryRow(
                             title: "Cost Setting",
                             symbolName: "dollarsign.circle.fill",
                             summary: String(localized: "Configure the Cost page"))
                     }
 
-                    NavigationLink {
-                        WidgetSettingsView(usageData: self.usageData)
-                    } label: {
+                    NavigationLink(value: Destination.widgets) {
                         SettingSummaryRow(
                             title: "Widget Setting",
                             symbolName: "square.grid.2x2",
@@ -2531,9 +2705,7 @@ private struct SettingsTab: View {
                 }
 
                 Section("Developer") {
-                    NavigationLink {
-                        DeveloperToolsView(usageData: self.usageData)
-                    } label: {
+                    NavigationLink(value: Destination.developer) {
                         SettingSummaryRow(
                             title: "Developer Tools",
                             symbolName: "wrench.and.screwdriver",
@@ -2606,7 +2778,21 @@ private struct SettingsTab: View {
                         }
                 }
             }
+        } detail: {
+            NavigationStack {
+                switch self.selection ?? (self.layout.usesListDetail ? .about : nil) {
+                case .about: AboutSyncDetailView(usageData: self.usageData)
+                case .notes: ReleaseNotesView()
+                case .usage: UsageSettingsView()
+                case .cost: CostSettingsView(usageData: self.usageData)
+                case .widgets: WidgetSettingsView(usageData: self.usageData)
+                case .developer: DeveloperToolsView(usageData: self.usageData)
+                case nil: EmptyView()
+                }
+            }
         }
+        .navigationSplitViewStyle(.balanced)
+        .environment(\.horizontalSizeClass, self.layout.usesListDetail ? .regular : .compact)
     }
 
     private var mobileVersionSummary: String {
@@ -4127,10 +4313,16 @@ private enum MobileReleaseNotesCatalog {
     static let versions: [ReleaseNotesVersion] = [
         ReleaseNotesVersion(
             version: "2.0.0", status: String(localized: "Latest"),
-            summary: String(localized: "Token activity across your Macs, with a clearer home for Codex service costs."),
+            summary: String(localized: "CodexBar 2.0 supports iOS 27 and iPadOS 27 with a rebuilt data architecture for much faster history, sync, and navigation."),
             sections: [.init(title: String(localized: "What's New"), items: [
-                String(localized: "Explore daily tokens in a scrollable yearly heatmap. Unavailable days stay distinct from confirmed zero usage."),
-                String(localized: "See total tokens on Cost, then tap to explore each provider’s activity. Codex Service Mix now lives in Codex details."),
+                String(
+                    localized: "Enjoy side-by-side views on iPad and a familiar single column on iPhone. Both keep bottom tabs and preserve navigation when you search and rotate."),
+                String(
+                    localized: "Explore combined daily tokens on Cost and all provider heatmaps in detail, with clearer colors and a wider layout."),
+                String(
+                    localized: "Tap or hold a day to see its tokens. Missing history stays distinct from zero. Codex Service Mix lives in Codex details."),
+                String(
+                    localized: "Create polished share cards with a preview-first editor, refreshed Classic and Vibe designs, and a Token Activity heatmap for all providers or one provider."),
             ])]),
         ReleaseNotesVersion(
             version: "1.24.0",
@@ -5467,3 +5659,55 @@ extension CodexBarWidgetColorStyle {
 #Preview("Empty State") {
     ContentView(usageData: PreviewData.makeEmptyUsageData())
 }
+
+#if DEBUG
+/// Deliberately illustrative sizes, not a Duo device profile. Uses actual app pages.
+struct MobileLayoutPreview: View {
+    let tab: MobileRootTab
+    let size: CGSize
+    var colorScheme: ColorScheme
+    var largeText: Bool
+    @State private var data: SyncedUsageData
+
+    init(
+        tab: MobileRootTab,
+        size: CGSize,
+        colorScheme: ColorScheme = .light,
+        largeText: Bool = false,
+        isEmpty: Bool = false)
+    {
+        self.tab = tab
+        self.size = size
+        self.colorScheme = colorScheme
+        self.largeText = largeText
+        _data = State(initialValue: isEmpty ? PreviewData.makeEmptyUsageData() : PreviewData.makeSyncedUsageData())
+    }
+
+    var body: some View {
+        ContentView(usageData: self.data, previewTab: self.tab)
+            .frame(width: self.size.width, height: self.size.height)
+            .preferredColorScheme(self.colorScheme)
+            .environment(\.dynamicTypeSize, self.largeText ? .accessibility2 : .large)
+    }
+}
+
+#Preview("Outer portrait - layout only", traits: .fixedLayout(width: 390, height: 844)) {
+    MobileLayoutPreview(tab: .usage, size: CGSize(width: 390, height: 844))
+}
+
+#Preview("Inner portrait - layout only", traits: .fixedLayout(width: 768, height: 1024)) {
+    MobileLayoutPreview(tab: .usage, size: CGSize(width: 768, height: 1024))
+}
+
+#Preview("Inner landscape - layout only", traits: .fixedLayout(width: 1024, height: 768)) {
+    MobileLayoutPreview(tab: .usage, size: CGSize(width: 1024, height: 768))
+}
+
+#Preview("Wide Cost - layout only", traits: .fixedLayout(width: 1024, height: 768)) {
+    MobileLayoutPreview(tab: .cost, size: CGSize(width: 1024, height: 768))
+}
+
+#Preview("Wide Settings - layout only", traits: .fixedLayout(width: 1024, height: 768)) {
+    MobileLayoutPreview(tab: .settings, size: CGSize(width: 1024, height: 768))
+}
+#endif

@@ -230,8 +230,11 @@ struct ProviderUsageView: View {
     /// Exposed as `internal` (no `private`) so unit tests can pin the
     /// selection rule without going through SwiftUI's view hierarchy.
     func subtitleLine() -> String? {
-        if let email = self.provider.accountEmail, !email.isEmpty {
-            return MobilePersonalInfoRedactor.redactEmail(email, isEnabled: self.hidePersonalInfo)
+        if let email = Self.visibleAccountEmail(
+            self.provider.accountEmail,
+            hidePersonalInfo: self.hidePersonalInfo)
+        {
+            return email
         }
         if let organization = self.provider.accountOrganization, !organization.isEmpty {
             return MobilePersonalInfoRedactor.redactEmails(
@@ -245,6 +248,14 @@ struct ProviderUsageView: View {
             return String(format: template, self.provider.providerName, ordinal)
         }
         return nil
+    }
+
+    /// Returns a visible email subtitle under the selected personal-info policy.
+    /// The adaptive list-detail row and the compact provider card share this
+    /// helper so a resize cannot reveal an email the user chose to hide.
+    static func visibleAccountEmail(_ email: String?, hidePersonalInfo: Bool) -> String? {
+        guard let email, !email.isEmpty else { return nil }
+        return MobilePersonalInfoRedactor.redactEmail(email, isEnabled: hidePersonalInfo)
     }
 
     // MARK: - Linkage prompt (Research/019 §7 + §9)

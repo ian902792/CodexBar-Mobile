@@ -93,3 +93,25 @@ UI夹具说明：`UI_TEST_PREVIEW_DATA`只注入内存快照，不写本地账�
 - 复盘与方案见05-review-audit；审计评论在第六轮请求前发布。
 - 统一 producer/reader 日历刷新标识与 optional / lower-bound 总数，覆盖同一时刻不同设备跨日、≥ 总数和全未知状态。
 - `/tmp/cbm-2-semantics-tests.log`：744 tests / 49 suites、2 UI tests 全部通过；结果包 `Test-CodexBarMobile-2026.09.11_15-04-21--0700.xcresult`。
+
+## Build 201 热力图反馈修订
+- 总图使用相同series按日total求和；新增dailyTotals回归验证已知、未知、0、部分下界与分项一致；新增高日用量、极端离群值、重复值、零值分档回归。
+- `/tmp/cbm-heatmap-tests.log`：745 tests /49 suites通过；首轮Cost导航UI测试发现标题空白点击范围问题，补contentShape后复测。原有Provider横滑与回到今天测试通过。
+- 此次仅iOS展示/颜色及按日投影，无Mac、Shared、payload、CloudKit或数据库写入修改。上文16组合对应合成回归随全套测试重跑；全部仍是substituted，不新增物理多设备验证结论。
+- 候选版本2.0.0(201)，未上传。最终focused/UI结果与截图见06-heatmap-feedback.md。
+
+- Build 201 final: /tmp/cbm-heatmap-final.log; 15 TokenActivity tests + 2 UI tests passed, including navigation, long press and horizontal history. Actual screenshots inspected; see 06-heatmap-feedback.md.
+
+
+## Adaptive layout increment (build 201)
+
+See [07-adaptive-duo.md](07-adaptive-duo.md) for the 24-render gallery, final 745 Swift Testing + 41 XCTest pass, ordinary iPhone UI checks and generic iPad resize test. No new wire/schema/production cache semantics are introduced; this increment rearranges existing data views. No additional physical 16-device-version combinations are claimed. Duo-specific verification remains pending its SDK/runtime.
+
+
+## Build 201 native navigation release gate
+
+See 07-adaptive-duo.md for actual iPhone 17 Pro / iPhone 17e / iPad Pro 13 test results, the reproduced search/keyboard resize bug and fix, actual-screen images, and upload provenance. All 745 Swift Testing + 41 XCTest cases and five UI case/device executions passed. Full repository lint passed. No wire/schema changes; previous 16 physical combinations remain substituted, not newly claimed as real-device passes.
+
+### Build 202 — bottom tabs on ordinary iPad (passed)
+
+Navigation placement is separated from content width. No Shared payload, schema, cache, aggregation or wire behavior changes in this increment. The prior 16-case substituted sync matrix remains applicable with the same physical-device limitations; no new physical convergence pass is claimed. Full-app iPad checks now require bottom tabs in both orientations while retaining wide content, and Duo trailing navigation is preview-only. Results are recorded in 08-native-navigation-testflight.md: 745 Swift Testing, 42 XCTest, 6 UI case/device executions passed; actual iPhone/iPad screenshots inspected; TestFlight 202 VALID / IN_BETA_TESTING / Internal confirmed.

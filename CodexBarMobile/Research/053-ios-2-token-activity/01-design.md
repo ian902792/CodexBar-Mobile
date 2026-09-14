@@ -55,3 +55,6 @@ Token Activity替代Show all days列表。7行代表星期、列代表周，显�
 
 ## 用户确认的 Cost 信息层级调整（2026-09-11）
 Cost 的 Daily Spend 上方改为单张总 Token 卡片，只显示所有支持 provider 的合计及过去一年范围。点击进入 Token Activity 详情，再显示按 provider 区分的热力图。Usage 单 provider 热力图保留。主卡片与详情复用同一份已加载 series，不在导航时发起第二次数据库聚合；未知/零、按设备与账号合并规则保持一致。
+
+## 2.0 TF 用户更正（build 201）
+上文「总数卡片」及前两Provider默认展开方案被用户最新反馈明确替代：Cost外层是按天相加的蓝色总热力图，点击标题进入全部Provider默认展开的全宽热力图；取消左侧名字列，标题加大。详见06-heatmap-feedback.md。

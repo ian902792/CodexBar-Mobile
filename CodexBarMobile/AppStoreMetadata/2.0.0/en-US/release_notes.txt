@@ -1,4 +1,6 @@
-Token activity across your Macs, with a clearer home for Codex service costs.
+CodexBar 2.0 is ready for iOS 27 and iPadOS 27, with an all-new data architecture that makes history, syncing, and navigation dramatically faster.
 
-• Explore daily tokens in a scrollable yearly heatmap. Unavailable days stay distinct from confirmed zero usage.
-• See total tokens on Cost, then tap to explore each provider’s activity. Codex Service Mix now lives in Codex details.
+• A rebuilt data pipeline loads, merges, and refreshes usage from your Macs much faster, while keeping missing history distinct from zero.
+• Token Activity heatmaps reveal daily totals at a glance. Open the details to explore every provider, tap or hold any day, and browse up to a year of history.
+• A new iPad experience uses wider, side-by-side layouts while keeping familiar bottom tabs.
+• Sharing is completely redesigned with a preview-first editor, refreshed Classic and Vibe cards, and a new Heatmap card.

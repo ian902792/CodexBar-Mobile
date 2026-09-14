@@ -2,14 +2,21 @@
 
 All notable changes to the CodexBar iOS companion app will be documented in this file.
 
-## [2.0.0 (200)] — Unreleased
+## [2.0.0 (211)] — Unreleased
 
 ### Added
-- Shared yearly Token Activity heatmaps in provider details, with provider colors and explicit unavailable states; a combined token total on Cost opens the per-provider activity breakdown.
+- Content-sized adaptive layouts: two-column Usage cards in roomy portrait windows, Usage/Settings list-detail in roomy landscape with bottom tabs retained on every shipping iPhone/iPad orientation, paired Cost summary/charts, and wider provider heatmap grids. Trailing navigation is confined to illustrative Duo previews; Duo-specific SDK/hinge behavior is not yet verified.
+
+- Shared yearly Token Activity heatmaps in provider details, with provider colors and explicit unavailable states; a combined daily-token heatmap on Cost opens all provider heatmaps, fully expanded with full-width charts and larger headings. Positive-day quartile colors distinguish high usage without clipping at 10M; compact cells expose more months and support day selection by tap or long press.
+- A preview-first Cost sharing editor with Classic, Vibe, and Token Activity Heatmap templates. Heatmap exports cover 90, 180, or 365 days and can combine all providers or focus on one provider without treating missing history as zero.
 - Preserve token availability in the local daily ledger independently of cost availability.
 
 ### Changed
 - Move Codex Service Mix from the global Cost dashboard to Codex details.
+- Refresh Classic and Vibe share cards with clearer hierarchy and replace the stacked segmented controls with compact template, range, and provider selectors. The iPad editor shows the preview and controls side by side.
+
+### Fixed
+- Dismiss provider search before opening details and measure adaptive layout independently of keyboard occlusion. Verify compact-phone navigation, bottom content clearance, and iPad selection across rotation in the running app.
 
 ## [1.24.0 (199)] — 2026-09-10
 

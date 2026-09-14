@@ -2,10 +2,21 @@ import CodexBarSync
 import Foundation
 import SwiftData
 import Testing
+import UIKit
 @testable import CodexBarMobile
 
 @Suite("Token Activity data semantics")
 struct TokenActivityTests {
+    @Test func `High daily usage retains distinct colors despite a single extreme outlier`() {
+        let values = [20, 30, 40, 50, 60, 70, 80, 9000].map { $0 * 1_000_000 }
+        let scale = TokenActivityColorScale(values: values)
+        #expect(Set(values.map(scale.intensity)).count == 4)
+        #expect(scale.intensity(0) == 0)
+        #expect(scale.intensity(20_000_000) < scale.intensity(80_000_000))
+        #expect(TokenActivityColorScale(values: [0, 0]).intensity(0) == 0)
+        #expect(TokenActivityColorScale(values: [5, 5, 5]).intensity(5) == 0.25)
+    }
+
     @Test func `Catch up publications invalidate token history even when usage and device timestamps stay fixed`() {
         let now = Date(timeIntervalSince1970: 1_789_084_800)
         let provider = ProviderUsageSnapshot(
@@ -155,6 +166,12 @@ struct TokenActivityTests {
         ])
         #expect(TokenActivity.total([zero]) == TokenActivityTotal(value: 0, isLowerBound: false))
         #expect(TokenActivity.total([unknown]).value == nil)
+        #expect(TokenActivity.dailyTotals([known, partial])[key]
+            == TokenActivityTotal(value: 200, isLowerBound: true))
+        #expect(TokenActivity.dailyTotals([known, zero])[key]
+            == TokenActivityTotal(value: 100, isLowerBound: false))
+        #expect(TokenActivity.dailyTotals([unknown])[key]?.value == nil)
+        #expect(TokenActivity.dailyTotals([zero])[key]?.value == 0)
         #expect(TokenActivity.total([known], dayKey: "2026-09-10").value == nil)
         for day in [nil, key] {
             #expect(TokenActivity.total([known, unknown], dayKey: day)
@@ -176,6 +193,142 @@ struct TokenActivityTests {
             costUSD: 0,
             totalTokens: 0,
             tokenCountIsKnown: true)) == 0)
+    }
+
+    @Test func `Heatmap share projection preserves window totals and splits a year without overlap`() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "America/Los_Angeles"))
+        let formatter = ISO8601DateFormatter()
+        let referenceDate = try #require(formatter.date(from: "2026-09-11T19:00:00Z"))
+        let provider = self.fixtureProvider()
+        let series = TokenActivitySeries(provider: provider, days: [
+            SyncDailyPoint(dayKey: "2026-09-09", costUSD: 0, totalTokens: 100, tokenCountIsKnown: true),
+            SyncDailyPoint(dayKey: "2026-09-10", costUSD: 0, totalTokens: 0, tokenCountIsKnown: true),
+            SyncDailyPoint(dayKey: "2026-09-11", costUSD: 0, totalTokens: 200, tokenCountIsKnown: true),
+        ])
+        let short = HeatmapShareData(
+            series: [series],
+            sourceTitle: "Codex",
+            window: .days90,
+            color: .purple,
+            referenceDate: referenceDate,
+            calendar: calendar)
+        #expect(short.days.count == 90)
+        #expect(short.days.last?.dayKey == "2026-09-11")
+        #expect(short.total == TokenActivityTotal(value: 300, isLowerBound: true))
+        #expect(short.activeDays == TokenActivityTotal(value: 2, isLowerBound: true))
+        #expect(short.peak == TokenActivityTotal(value: 200, isLowerBound: true))
+        #expect(short.calendarBlocks.count == 1)
+
+        let year = HeatmapShareData(
+            series: [series],
+            sourceTitle: "Codex",
+            window: .days365,
+            color: .purple,
+            referenceDate: referenceDate,
+            calendar: calendar)
+        let flattened = year.calendarBlocks.flatMap(\.self)
+        #expect(year.calendarBlocks.count == 2)
+        #expect(flattened.count == 365)
+        #expect(Set(flattened.map(\.dayKey)).count == 365)
+        #expect(flattened.map(\.dayKey) == year.days.map(\.dayKey))
+    }
+
+    @Test func `Heatmap share totals saturate across separate days`() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "America/Los_Angeles"))
+        let formatter = ISO8601DateFormatter()
+        let referenceDate = try #require(formatter.date(from: "2026-09-11T19:00:00Z"))
+        let series = TokenActivitySeries(provider: self.fixtureProvider(), days: [
+            SyncDailyPoint(dayKey: "2026-09-10", costUSD: 0, totalTokens: Int.max, tokenCountIsKnown: true),
+            SyncDailyPoint(dayKey: "2026-09-11", costUSD: 0, totalTokens: 1, tokenCountIsKnown: true),
+        ])
+
+        let heatmap = HeatmapShareData(
+            series: [series],
+            sourceTitle: "Codex",
+            window: .days90,
+            color: .purple,
+            referenceDate: referenceDate,
+            calendar: calendar)
+
+        #expect(heatmap.total.value == Int.max)
+    }
+
+    @Test func `Heatmap share uses Gregorian synced keys with a non Gregorian system calendar`() throws {
+        var buddhistCalendar = Calendar(identifier: .buddhist)
+        buddhistCalendar.timeZone = try #require(TimeZone(identifier: "America/Los_Angeles"))
+        let formatter = ISO8601DateFormatter()
+        let referenceDate = try #require(formatter.date(from: "2026-09-11T19:00:00Z"))
+        let series = TokenActivitySeries(provider: self.fixtureProvider(), days: [
+            SyncDailyPoint(dayKey: "2026-09-10", costUSD: 0, totalTokens: 100, tokenCountIsKnown: true),
+            SyncDailyPoint(dayKey: "2026-09-11", costUSD: 0, totalTokens: 200, tokenCountIsKnown: true),
+        ])
+
+        let heatmap = HeatmapShareData(
+            series: [series],
+            sourceTitle: "Codex",
+            window: .days90,
+            color: .purple,
+            referenceDate: referenceDate,
+            calendar: buddhistCalendar)
+
+        #expect(heatmap.days.last?.dayKey == "2026-09-11")
+        #expect(heatmap.total == TokenActivityTotal(value: 300, isLowerBound: true))
+        #expect(heatmap.activeDays == TokenActivityTotal(value: 2, isLowerBound: true))
+    }
+
+    @Test @MainActor func `Heatmap share title preserves the selected duplicate account`() {
+        func series(
+            email: String?,
+            loginMethod: String? = nil,
+            tint: String? = nil,
+            accountRecordKey: String? = nil) -> TokenActivitySeries
+        {
+            TokenActivitySeries(provider: ProviderUsageSnapshot(
+                providerID: "codex",
+                providerName: "Codex",
+                primary: nil,
+                secondary: nil,
+                accountEmail: email,
+                loginMethod: loginMethod,
+                statusMessage: nil,
+                isError: false,
+                lastUpdated: Date(timeIntervalSince1970: 0),
+                accountRecordKey: accountRecordKey,
+                providerIconTintHex: tint), days: [])
+        }
+
+        let personal = series(email: "personal@example.com")
+        let work = series(email: "work@example.com")
+
+        #expect(CostShareSheet.heatmapSourceTitle(for: personal.id, in: [personal, work]) == "Codex · personal@example.com")
+        #expect(CostShareSheet.heatmapSourceTitle(for: nil, in: [personal, work]) == String(localized: "All Providers"))
+
+        let oauth = series(email: nil, loginMethod: "OAuth", accountRecordKey: "oauth")
+        let team = series(email: nil, loginMethod: "Team", accountRecordKey: "team")
+        #expect(CostShareSheet.heatmapSourceTitle(for: oauth.id, in: [oauth, team]) == "Codex · OAuth")
+        #expect(CostShareSheet.heatmapSourceTitle(for: team.id, in: [oauth, team]) == "Codex · Team")
+
+        let secondOAuth = series(email: nil, loginMethod: "OAuth", accountRecordKey: "oauth-second")
+        #expect(CostShareSheet.heatmapSourceTitle(for: secondOAuth.id, in: [oauth, secondOAuth])
+            == "Codex · " + String.localizedStringWithFormat(String(localized: "Account %lld"), 2))
+
+        let customTint = series(email: "tint@example.com", tint: "#D044A7")
+        let color = UIColor(CostShareSheet.heatmapColor(for: customTint))
+        var red = CGFloat.zero
+        var green = CGFloat.zero
+        var blue = CGFloat.zero
+        var alpha = CGFloat.zero
+        #expect(color.getRed(&red, green: &green, blue: &blue, alpha: &alpha))
+        #expect(abs(red - 208.0 / 255.0) < 0.001)
+        #expect(abs(green - 68.0 / 255.0) < 0.001)
+        #expect(abs(blue - 167.0 / 255.0) < 0.001)
+        #expect(abs(alpha - 1) < 0.001)
+
+        #expect(CostShareSheet.usesSideBySideLayout(width: 700, dynamicTypeSize: .large))
+        #expect(!CostShareSheet.usesSideBySideLayout(width: 700, dynamicTypeSize: .accessibility1))
+        #expect(!CostShareSheet.usesSideBySideLayout(width: 699, dynamicTypeSize: .large))
     }
 
     @Test func `Known tokens remain available without a monetary cost`() {
