@@ -16,8 +16,7 @@ struct CostShareSheet: View {
     @State private var tokenSeries: [TokenActivitySeries] = []
     @State private var isLoadingTokens = true
     @State private var tokenLoadFailed = false
-    @State private var renderedImage: UIImage?
-    @State private var showingActivitySheet = false
+    @State private var activityPresentation: ActivityPresentation?
     @State private var showingRenderError = false
 
     private var theme: ShareCardTheme {
@@ -97,11 +96,9 @@ struct CostShareSheet: View {
                 .background(.bar)
                 .accessibilityIdentifier("share-card-action")
             }
-            .sheet(isPresented: self.$showingActivitySheet) {
-                if let image = self.renderedImage {
-                    ActivityViewController(activityItems: [image])
-                        .presentationDetents([.medium, .large])
-                }
+            .sheet(item: self.$activityPresentation) { presentation in
+                ActivityViewController(activityItems: [presentation.image])
+                    .presentationDetents([.medium, .large])
             }
             .alert(String(localized: "Could Not Create Image"), isPresented: self.$showingRenderError) {
                 Button(String(localized: "OK"), role: .cancel) {}
@@ -300,9 +297,13 @@ struct CostShareSheet: View {
             self.showingRenderError = true
             return
         }
-        self.renderedImage = image
-        self.showingActivitySheet = true
+        self.activityPresentation = ActivityPresentation(image: image)
     }
+}
+
+private struct ActivityPresentation: Identifiable {
+    let id = UUID()
+    let image: UIImage
 }
 
 private struct ShareCardPreview: View {

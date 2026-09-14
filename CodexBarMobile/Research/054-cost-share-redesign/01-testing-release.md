@@ -1,6 +1,16 @@
 # 054 — 测试与 TestFlight 证据
 
-状态：done。目标版本：iOS 2.0.0 (203)。分支：`feature/ios-cost-share-redesign`。
+状态：in-progress。目标版本：iOS 2.0.0 (204)。发布分支：`release/ios-2.0-app-store`。
+
+## Build 204 发布替换验证（2026-09-14）
+
+- build 203 保留为历史 Internal TestFlight 构建；本轮只会以 build 204 作为 iOS 27 / iPadOS 27 的候选交付物。
+- `project.yml` 与生成后的 `.xcodeproj` 中主 App、Widget、Push Extension、Sync Extension 均为 `MARKETING_VERSION=2.0.0`、`CURRENT_PROJECT_VERSION=204`。
+- 工具链：Xcode 27.0 (`27A266a`)、iOS 27.0 SDK (`24A430`)；在 iOS 27.0 Simulator runtime (`24A434`) 的 iPhone 18 Pro 上验证。首次下载的 runtime 未通过密封资源校验，已删除并重新下载；新设备可正常引导后才开始最终验证。
+- 完整测试：`xcodebuild ... -scheme CodexBarMobile -destination 'platform=iOS Simulator,id=83278BCC-AE64-41F8-97A1-05CA13FA5CAE' -parallel-testing-enabled NO test` 返回 `TEST SUCCEEDED`。UI 套件 14 个执行、0 failure；6 个依赖已放置 Home Screen Widget 或 roomy 窗口的用例按测试前提跳过。结果包：`/Volumes/StudioSSD/Developer/BuildScratch/CodexBar/Xcode27/results/CodexBarMobile-iOS27-final.xcresult`。
+- Heatmap 分享回归：iOS 27 下原先同时设置图片和 sheet 状态会偶发先呈现空 sheet。改为由带图片的 `ActivityPresentation` 驱动 `.sheet(item:)`，保证只有渲染完成后才显示系统分享面板。定向 UI 测试和完整 UI 套件均回读到 `ActivityListView`。
+- `bash Scripts/lint.sh audit-i18n` 通过：四语言全部 translated，354 个 source key 全部存在；`git diff --check` 通过。
+- CloudKit Production 审计：相对最近公开 tag `v0.58.0.1-mobile.1.23.0`，`CloudConstants.swift`、record type/field/index/zone/subscription、`providerPayloadVersion` 与新增非 optional shared 字段审计均无输出；本轮没有新 schema，结论为 **NO_DEPLOY**。
 
 ## 数据与同步边界
 

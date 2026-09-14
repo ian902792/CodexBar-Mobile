@@ -1317,6 +1317,34 @@
         }
       }
     },
+    "CodexBar 2.0 supports iOS 27 and iPadOS 27 with a rebuilt data architecture for much faster history, sync, and navigation.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CodexBar 2.0 supports iOS 27 and iPadOS 27 with a rebuilt data architecture for much faster history, sync, and navigation."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CodexBar 2.0 支持 iOS 27 和 iPadOS 27，并通过全新数据架构显著加快历史加载、同步和页面切换。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CodexBar 2.0 支援 iOS 27 和 iPadOS 27，並透過全新資料架構大幅加快歷史載入、同步和頁面切換。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CodexBar 2.0 は iOS 27 と iPadOS 27 に対応し、新しいデータアーキテクチャで履歴、同期、画面切り替えを大幅に高速化します。"
+          }
+        }
+      }
+    },
     "Explore daily tokens in a scrollable yearly heatmap. Unavailable days stay distinct from confirmed zero usage.": {
       "localizations": {
         "en": {

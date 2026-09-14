@@ -53,5 +53,5 @@ This directory contains research documents for features being considered for Cod
 
 | 051 | v0.58.0 single upstream sync (10 releases; issues #108/#109/#111–118) | `in-progress` | Mac0.58.0.1已正式发布；iOS未上传，追加历史调查另行处理 | [051-v058-upstream-sync/00-overview.md](051-v058-upstream-sync/00-overview.md) | 2026-09-10 |
 | 052 | iOS历史完整性与后台刷新 | `in-progress` | 已确认代码缺陷已修复；问题手机金额对账待设备/页面确认 | [052-history-refresh-integrity/00-research.md](052-history-refresh-integrity/00-research.md) | 2026-09-10 |
-| 054 | Cost 分享编辑页与 Heatmap 模板 | `done` | 三模板、全年 Heatmap、Provider 筛选和 iPhone/iPad 自适应布局完成；2.0.0 (203) 已进入 TestFlight Internal | [054-cost-share-redesign/00-design.md](054-cost-share-redesign/00-design.md) | 2026-09-11 |
-| 055 | iOS 2.0 App Store 版本与 Token Activity 活动 | `draft` | 2.0.0 版本草稿与四语更新说明已创建；Heatmap 活动素材待视觉确认，iOS 27 SDK 与 deep link gate 待完成 | [055-ios-2-app-store-event/00-plan.md](055-ios-2-app-store-event/00-plan.md) | 2026-09-14 |
+| 054 | Cost 分享编辑页与 Heatmap 模板 | `in-progress` | 三模板、全年 Heatmap、Provider 筛选和 iPhone/iPad 自适应布局完成；2.0.0 (204) 已在 Xcode 27 / iOS 27 完整测试，待 PR review、merge 与 TestFlight 上传 | [054-cost-share-redesign/00-design.md](054-cost-share-redesign/00-design.md) | 2026-09-14 |
+| 055 | iOS 2.0 App Store 版本与 Token Activity 活动 | `draft` | 2.0.0 版本草稿与四语更新说明已创建；Xcode/iOS 27 已实际验证，活动视觉参考与 deep link gate 独立待办 | [055-ios-2-app-store-event/00-plan.md](055-ios-2-app-store-event/00-plan.md) | 2026-09-14 |

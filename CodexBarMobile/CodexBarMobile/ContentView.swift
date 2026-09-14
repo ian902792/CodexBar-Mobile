@@ -4309,7 +4309,7 @@ private enum MobileReleaseNotesCatalog {
     static let versions: [ReleaseNotesVersion] = [
         ReleaseNotesVersion(
             version: "2.0.0", status: String(localized: "Latest"),
-            summary: String(localized: "Token activity across your Macs, with a clearer home for Codex service costs."),
+            summary: String(localized: "CodexBar 2.0 supports iOS 27 and iPadOS 27 with a rebuilt data architecture for much faster history, sync, and navigation."),
             sections: [.init(title: String(localized: "What's New"), items: [
                 String(
                     localized: "Enjoy side-by-side views on iPad and a familiar single column on iPhone. Both keep bottom tabs and preserve navigation when you search and rotate."),
