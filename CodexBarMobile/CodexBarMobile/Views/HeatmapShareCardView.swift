@@ -36,7 +36,7 @@ struct HeatmapShareData {
     let days: [Day]
     let color: Color
     let total: TokenActivityTotal
-    let activeDays: Int
+    let activeDays: TokenActivityTotal
     let peak: TokenActivityTotal
 
     var calendarBlocks: [[Day]] {
@@ -80,7 +80,9 @@ struct HeatmapShareData {
         self.total = TokenActivityTotal(
             value: known.isEmpty ? nil : sum,
             isLowerBound: !known.isEmpty && incomplete)
-        self.activeDays = known.count(where: { $0 > 0 })
+        self.activeDays = TokenActivityTotal(
+            value: known.isEmpty ? nil : known.count(where: { $0 > 0 }),
+            isLowerBound: !known.isEmpty && incomplete)
         self.peak = TokenActivityTotal(
             value: known.max(),
             isLowerBound: !known.isEmpty && incomplete)
@@ -92,7 +94,7 @@ struct HeatmapShareData {
         days: [Day],
         color: Color,
         total: TokenActivityTotal,
-        activeDays: Int,
+        activeDays: TokenActivityTotal,
         peak: TokenActivityTotal)
     {
         self.sourceTitle = sourceTitle
@@ -125,7 +127,7 @@ struct HeatmapShareData {
             days: days,
             color: .blue,
             total: .init(value: known.reduce(0, +), isLowerBound: true),
-            activeDays: known.count(where: { $0 > 0 }),
+            activeDays: .init(value: known.count(where: { $0 > 0 }), isLowerBound: true),
             peak: .init(value: known.max(), isLowerBound: true))
     }
 }
@@ -165,7 +167,7 @@ struct HeatmapShareCardView: View {
                 .foregroundStyle(self.theme.secondary)
 
             HStack(spacing: 10) {
-                HeatmapMetric(title: String(localized: "Active Days"), value: "\(self.data.activeDays)")
+                HeatmapMetric(title: String(localized: "Active Days"), value: self.data.activeDays.text)
                 HeatmapMetric(
                     title: String(localized: "Peak Day"),
                     value: Self.compactTokens(self.data.peak))

@@ -216,7 +216,7 @@ struct TokenActivityTests {
         #expect(short.days.count == 90)
         #expect(short.days.last?.dayKey == "2026-09-11")
         #expect(short.total == TokenActivityTotal(value: 300, isLowerBound: true))
-        #expect(short.activeDays == 2)
+        #expect(short.activeDays == TokenActivityTotal(value: 2, isLowerBound: true))
         #expect(short.peak == TokenActivityTotal(value: 200, isLowerBound: true))
         #expect(short.calendarBlocks.count == 1)
 
@@ -275,7 +275,7 @@ struct TokenActivityTests {
 
         #expect(heatmap.days.last?.dayKey == "2026-09-11")
         #expect(heatmap.total == TokenActivityTotal(value: 300, isLowerBound: true))
-        #expect(heatmap.activeDays == 2)
+        #expect(heatmap.activeDays == TokenActivityTotal(value: 2, isLowerBound: true))
     }
 
     @Test @MainActor func `Heatmap share title preserves the selected duplicate account`() {
