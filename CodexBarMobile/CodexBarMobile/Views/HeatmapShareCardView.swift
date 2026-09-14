@@ -53,15 +53,20 @@ struct HeatmapShareData {
         referenceDate: Date,
         calendar: Calendar = .current)
     {
-        let end = calendar.startOfDay(for: referenceDate)
-        let start = calendar.date(byAdding: .day, value: -(window.rawValue - 1), to: end)!
+        // CloudKit daily points always use Gregorian yyyy-MM-dd keys. Keep the
+        // reader's time zone for the visual day boundary, but never let a
+        // user-selected calendar change the key namespace used for lookups.
+        var projectionCalendar = Calendar(identifier: .gregorian)
+        projectionCalendar.timeZone = calendar.timeZone
+        let end = projectionCalendar.startOfDay(for: referenceDate)
+        let start = projectionCalendar.date(byAdding: .day, value: -(window.rawValue - 1), to: end)!
         let totals = TokenActivity.dailyTotals(series)
         self.sourceTitle = sourceTitle
         self.window = window
         self.color = color
         self.days = (0..<window.rawValue).compactMap { offset in
-            guard let date = calendar.date(byAdding: .day, value: offset, to: start) else { return nil }
-            let key = TokenActivity.dayKey(date, calendar: calendar)
+            guard let date = projectionCalendar.date(byAdding: .day, value: offset, to: start) else { return nil }
+            let key = TokenActivity.dayKey(date, calendar: projectionCalendar)
             let value = totals[key]
             return Day(
                 date: date,

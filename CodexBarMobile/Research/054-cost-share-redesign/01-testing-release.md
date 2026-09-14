@@ -1,16 +1,17 @@
 # 054 — 测试与 TestFlight 证据
 
-状态：done。目标版本：iOS 2.0.0 (206)。发布分支：`release/ios-2.0-app-store`。
+状态：in-progress。目标版本：iOS 2.0.0 (207)。发布分支：`release/ios-2.0-app-store`。
 
-## Build 206 发布替换验证（2026-09-14）
+## Build 207 审查修复与发布替换验证（2026-09-14）
 
-- build 203 保留为历史 Internal TestFlight 构建；build 204 与 205 已完成 Xcode 27 上传，但在各自的 PR 审查发现用户可见/边界缺陷后被明确淘汰。本轮只会以 build 206 作为 iOS 27 / iPadOS 27 的候选交付物。
-- `project.yml` 与生成后的 `.xcodeproj` 中主 App、Widget、Push Extension、Sync Extension 均为 `MARKETING_VERSION=2.0.0`、`CURRENT_PROJECT_VERSION=206`。
+- build 203 保留为历史 Internal TestFlight 构建；build 204、205 与 206 均已上传，但分别在 PR 审查发现用户可见或边界缺陷后明确淘汰。本轮仅以 build 207 作为 iOS 27 / iPadOS 27 的候选交付物。
+- `project.yml` 与生成后的 `.xcodeproj` 中主 App、Widget、Push Extension、Sync Extension 均为 `MARKETING_VERSION=2.0.0`、`CURRENT_PROJECT_VERSION=207`。
 - 工具链：Xcode 27.0 (`27A266a`)、iOS 27.0 SDK (`24A430`)；在 iOS 27.0 Simulator runtime (`24A434`) 的 iPhone 18 Pro 上验证。首次下载的 runtime 未通过密封资源校验，已删除并重新下载；新设备可正常引导后才开始最终验证。
-- 完整测试：build 206 使用 `xcodebuild ... -scheme CodexBarMobile -destination 'platform=iOS Simulator,id=83278BCC-AE64-41F8-97A1-05CA13FA5CAE' -parallel-testing-enabled NO test` 返回 `TEST SUCCEEDED`。749 个单元/模型测试、49 个 suite 全部通过；UI 套件 14 个执行、0 failure；6 个依赖已放置 Home Screen Widget 或 roomy 窗口的用例按测试前提跳过。结果包：`/Volumes/StudioSSD/Developer/BuildScratch/CodexBar/Xcode27/results/CodexBarMobile-iOS27-build206-final.xcresult`。
+- 完整测试：build 207 使用 `xcodebuild ... -scheme CodexBarMobile -destination 'platform=iOS Simulator,id=83278BCC-AE64-41F8-97A1-05CA13FA5CAE' -parallel-testing-enabled NO test` 返回 `TEST SUCCEEDED`。结果包记录 801 项通过、6 项按前置条件跳过、0 failure；UI 套件 14 个执行、0 failure，跳过项均依赖已放置 Home Screen Widget 或 roomy 窗口。结果包：`/Volumes/StudioSSD/Developer/BuildScratch/CodexBar/Xcode27/results/CodexBarMobile-iOS27-build207-final.xcresult`。
 - Heatmap 分享回归：iOS 27 下原先同时设置图片和 sheet 状态会偶发先呈现空 sheet。改为由带图片的 `ActivityPresentation` 驱动 `.sheet(item:)`，保证只有渲染完成后才显示系统分享面板。定向 UI 测试和完整 UI 套件均回读到 `ActivityListView`。
 - PR 审查修复：Vibe 导出在费用历史不完整时显示本地化提示；Today 的 Active Days 只在当天存在真实费用活动时为 1；Heatmap 跨日总数改用 `SyncCounterMath.saturatingSum`，避免极端同步计数溢出。新增对应 Token Activity 与 ShareCardData 回归测试。
 - 第二轮 PR 审查修复：当多个账号共享 Provider 名称时，Heatmap 导出标题复用 picker 的账号消歧逻辑（`Provider · email`），确保导出范围可辨识。新增同名双账号标题回归测试；定向 Token Activity 测试 18 项通过。
+- 第三轮 PR 审查修复：Heatmap 分享投影明确使用 Gregorian 日历生成 CloudKit `yyyy-MM-dd` 日键，同时保留用户当前时区的日界线。这样佛历等非 Gregorian 系统日历不会令有效同步数据全部变为 unavailable。新增佛历系统日历回归；定向 Token Activity 测试 19 项通过。
 - `bash Scripts/lint.sh lint` 通过：四语言全部 translated，355 个 source key 全部存在；`git diff --check`、CI policy 与 fork README guards 通过。
 - CloudKit Production 审计：相对最近公开 tag `v0.58.0.1-mobile.1.23.0`，`CloudConstants.swift`、record type/field/index/zone/subscription、`providerPayloadVersion` 与新增非 optional shared 字段审计均无输出；本轮没有新 schema，结论为 **NO_DEPLOY**。
 
@@ -37,7 +38,7 @@
 - Heatmap：365 天使用两个连续区块并共享同一强度阈值；未知日期为虚线空格、确定零为弱实色、正数使用四档相对强度；90/180 天使用更大的格子。
 - 编辑器：iPhone 上预览优先并纵向滚动；iPad 宽窗口双栏。预览和导出复用同一个 `CostShareCardView` 及同一数据投影。
 
-## 发布记录
+## 已淘汰 Build 206 的归档与上传记录
 
 - 最终 source commit：`d5a4a293014d76d3166848fc8804e50084d456ab`（`fix(ios): label selected heatmap account`）。build 206 的完整 iOS 27 测试、lint、CI policy 与 fork README guard 均通过。
 - 最终 Archive：`/Volumes/StudioSSD/Developer/BuildScratch/CodexBar/Archives/CodexBarMobile-2.0.0-206.xcarchive`；archive `Info.plist` SHA-256 为 `5b7f0b269e19d11766fcb1500599768e827f70f01adc9d548dd1a30d0591859e`。主 App、Widget、Push Extension 都是 `2.0.0 (206)`，`codesign --verify --deep --strict` 通过，CloudKit container environment 为 `Production`。

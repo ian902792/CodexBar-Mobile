@@ -254,6 +254,29 @@ struct TokenActivityTests {
         #expect(heatmap.total.value == Int.max)
     }
 
+    @Test func `Heatmap share uses Gregorian synced keys with a non Gregorian system calendar`() throws {
+        var buddhistCalendar = Calendar(identifier: .buddhist)
+        buddhistCalendar.timeZone = try #require(TimeZone(identifier: "America/Los_Angeles"))
+        let formatter = ISO8601DateFormatter()
+        let referenceDate = try #require(formatter.date(from: "2026-09-11T19:00:00Z"))
+        let series = TokenActivitySeries(provider: self.fixtureProvider(), days: [
+            SyncDailyPoint(dayKey: "2026-09-10", costUSD: 0, totalTokens: 100, tokenCountIsKnown: true),
+            SyncDailyPoint(dayKey: "2026-09-11", costUSD: 0, totalTokens: 200, tokenCountIsKnown: true),
+        ])
+
+        let heatmap = HeatmapShareData(
+            series: [series],
+            sourceTitle: "Codex",
+            window: .days90,
+            color: .purple,
+            referenceDate: referenceDate,
+            calendar: buddhistCalendar)
+
+        #expect(heatmap.days.last?.dayKey == "2026-09-11")
+        #expect(heatmap.total == TokenActivityTotal(value: 300, isLowerBound: true))
+        #expect(heatmap.activeDays == 2)
+    }
+
     @Test @MainActor func `Heatmap share title preserves the selected duplicate account`() {
         func series(email: String) -> TokenActivitySeries {
             TokenActivitySeries(provider: ProviderUsageSnapshot(
