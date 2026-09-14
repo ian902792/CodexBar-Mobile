@@ -254,6 +254,27 @@ struct TokenActivityTests {
         #expect(heatmap.total.value == Int.max)
     }
 
+    @Test @MainActor func `Heatmap share title preserves the selected duplicate account`() {
+        func series(email: String) -> TokenActivitySeries {
+            TokenActivitySeries(provider: ProviderUsageSnapshot(
+                providerID: "codex",
+                providerName: "Codex",
+                primary: nil,
+                secondary: nil,
+                accountEmail: email,
+                loginMethod: nil,
+                statusMessage: nil,
+                isError: false,
+                lastUpdated: Date(timeIntervalSince1970: 0)), days: [])
+        }
+
+        let personal = series(email: "personal@example.com")
+        let work = series(email: "work@example.com")
+
+        #expect(CostShareSheet.heatmapSourceTitle(for: personal.id, in: [personal, work]) == "Codex · personal@example.com")
+        #expect(CostShareSheet.heatmapSourceTitle(for: nil, in: [personal, work]) == String(localized: "All Providers"))
+    }
+
     @Test func `Known tokens remain available without a monetary cost`() {
         let point = SyncDailyPoint(
             dayKey: "2026-09-10",

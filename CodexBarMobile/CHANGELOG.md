@@ -2,7 +2,7 @@
 
 All notable changes to the CodexBar iOS companion app will be documented in this file.
 
-## [2.0.0 (205)] — Unreleased
+## [2.0.0 (206)] — Unreleased
 
 ### Added
 - Content-sized adaptive layouts: two-column Usage cards in roomy portrait windows, Usage/Settings list-detail in roomy landscape with bottom tabs retained on every shipping iPhone/iPad orientation, paired Cost summary/charts, and wider provider heatmap grids. Trailing navigation is confined to illustrative Duo previews; Duo-specific SDK/hinge behavior is not yet verified.

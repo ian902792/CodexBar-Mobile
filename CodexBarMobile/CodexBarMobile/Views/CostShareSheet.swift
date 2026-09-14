@@ -42,9 +42,9 @@ struct CostShareSheet: View {
         let selected = self.selectedSeries.first
         return HeatmapShareData(
             series: self.selectedSeries,
-            sourceTitle: self.selectedProviderID == nil
-                ? String(localized: "All Providers")
-                : selected?.provider.providerName ?? String(localized: "All Providers"),
+            sourceTitle: Self.heatmapSourceTitle(
+                for: self.selectedProviderID,
+                in: self.tokenSeries),
             window: self.heatmapWindow,
             color: self.selectedProviderID == nil
                 ? .blue
@@ -254,8 +254,20 @@ struct CostShareSheet: View {
     }
 
     private func providerTitle(for id: String) -> String? {
-        guard let item = self.tokenSeries.first(where: { $0.id == id }) else { return nil }
-        let duplicates = self.tokenSeries.count { $0.provider.providerName == item.provider.providerName }
+        guard self.tokenSeries.contains(where: { $0.id == id }) else { return nil }
+        return Self.heatmapSourceTitle(for: id, in: self.tokenSeries)
+    }
+
+    static func heatmapSourceTitle(
+        for selectedProviderID: String?,
+        in tokenSeries: [TokenActivitySeries]) -> String
+    {
+        guard let selectedProviderID,
+              let item = tokenSeries.first(where: { $0.id == selectedProviderID })
+        else {
+            return String(localized: "All Providers")
+        }
+        let duplicates = tokenSeries.count { $0.provider.providerName == item.provider.providerName }
         guard duplicates > 1, let email = item.provider.accountEmail else { return item.provider.providerName }
         return item.provider.providerName + " · " + email
     }
