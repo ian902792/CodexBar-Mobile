@@ -1,3 +1,4 @@
+import CodexBarSync
 import SwiftUI
 
 enum HeatmapShareWindow: Int, CaseIterable, Identifiable {
@@ -69,12 +70,10 @@ struct HeatmapShareData {
                 isLowerBound: value?.isLowerBound == true)
         }
         let known = self.days.compactMap(\.tokens)
-        let sum = known.reduce(Int64(0)) { partial, value in
-            min(Int64(Int.max), partial + Int64(value))
-        }
+        let sum = SyncCounterMath.saturatingSum(known)
         let incomplete = self.days.contains { $0.tokens == nil || $0.isLowerBound }
         self.total = TokenActivityTotal(
-            value: known.isEmpty ? nil : Int(sum),
+            value: known.isEmpty ? nil : sum,
             isLowerBound: !known.isEmpty && incomplete)
         self.activeDays = known.count(where: { $0 > 0 })
         self.peakTokens = known.max()

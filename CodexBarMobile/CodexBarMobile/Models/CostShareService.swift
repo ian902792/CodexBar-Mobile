@@ -790,8 +790,8 @@ extension ShareCardData {
         let displayDays: [CostDashboardInsights.DailyPoint]
         switch period {
         case .today:
-            displayDays = []
-            activeDays = 1
+            displayDays = filteredDays
+            activeDays = displayDays.contains(where: \.hasCostActivity) ? 1 : 0
         case .week:
             displayDays = filteredDays
             activeDays = displayDays.count(where: \.hasCostActivity)

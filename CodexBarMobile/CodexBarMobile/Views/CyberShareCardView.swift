@@ -109,6 +109,13 @@ private struct VibeShareCard: View {
                 }
                 .padding(.top, 20)
 
+                if self.data.costCoverageIsIncomplete {
+                    Text(String(localized: "Historical cost coverage is incomplete."))
+                        .font(.caption2)
+                        .foregroundStyle(self.theme.secondary)
+                        .padding(.top, 8)
+                }
+
                 VStack(spacing: 10) {
                     ForEach(Array(self.data.displayProviders.prefix(4).enumerated()), id: \.offset) { _, provider in
                         HStack(spacing: 10) {

@@ -675,6 +675,28 @@ struct CostShareServiceTests {
     }
 
     @Test
+    func `Share card Today does not invent an active day from older history`() {
+        let yesterday = self.day(daysAgo: 1, cost: 4, tokens: 400)
+        let codex = CostDashboardInsights.ProviderRow(
+            provider: self.provider(id: "codex", name: "Codex"),
+            thirtyDayCost: 4,
+            todayCost: 0,
+            thirtyDayTokens: 400,
+            todayTokens: 0,
+            dailyPoints: [yesterday])
+        let insights = CostDashboardInsights(
+            providerRows: [codex],
+            dailyPoints: [yesterday],
+            modelRows: [],
+            serviceRows: [],
+            budgetRows: [])
+
+        let today = ShareCardData(insights: insights, period: .today)
+
+        #expect(today.activeDays == 0)
+    }
+
+    @Test
     func `Token-only cost keeps share tokens without inventing zero spend`() {
         let dailyPoint = self.day(daysAgo: 0, cost: 0, tokens: 900, costIsKnown: false)
         let provider = ProviderUsageSnapshot(

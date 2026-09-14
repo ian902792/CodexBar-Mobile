@@ -8,7 +8,7 @@
 - 状态：`PREPARE_FOR_SUBMISSION`，发布方式：`MANUAL`。
 - `en-US`、`zh-Hans`、`zh-Hant`、`ja` 更新说明已通过 API 写入并逐项回读一致。
 - 更新说明优先级：iOS 27 / iPadOS 27、全新数据架构与显著性能提升、Token Activity Heatmap、iPad 宽屏布局、分享卡片重构。
-- 当前未绑定 build，也未创建 review submission。build 203 使用 Xcode 26.6 / iOS 26.5 SDK，保留为历史 Internal TestFlight build。build 204 已用 Xcode 27.0 正式版、iOS 27.0 SDK 与 iOS 27.0 Simulator Runtime 完成完整测试；待 PR review/merge 后 archive 与上传。
+- 当前未绑定 build，也未创建 review submission。build 203 使用 Xcode 26.6 / iOS 26.5 SDK，保留为历史 Internal TestFlight build。build 204 已用 Xcode 27.0 正式版、iOS 27.0 SDK 与 iOS 27.0 Simulator Runtime 完成完整测试并上传，但 PR 审查修复改变了二进制；最终候选为 build 205，待重新归档、上传与绑定。
 
 ## Token Activity In-App Event
 

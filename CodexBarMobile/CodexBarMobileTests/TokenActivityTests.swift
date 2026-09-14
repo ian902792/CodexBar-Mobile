@@ -233,6 +233,27 @@ struct TokenActivityTests {
         #expect(flattened.map(\.dayKey) == year.days.map(\.dayKey))
     }
 
+    @Test func `Heatmap share totals saturate across separate days`() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "America/Los_Angeles"))
+        let formatter = ISO8601DateFormatter()
+        let referenceDate = try #require(formatter.date(from: "2026-09-11T19:00:00Z"))
+        let series = TokenActivitySeries(provider: self.fixtureProvider(), days: [
+            SyncDailyPoint(dayKey: "2026-09-10", costUSD: 0, totalTokens: Int.max, tokenCountIsKnown: true),
+            SyncDailyPoint(dayKey: "2026-09-11", costUSD: 0, totalTokens: 1, tokenCountIsKnown: true),
+        ])
+
+        let heatmap = HeatmapShareData(
+            series: [series],
+            sourceTitle: "Codex",
+            window: .days90,
+            color: .purple,
+            referenceDate: referenceDate,
+            calendar: calendar)
+
+        #expect(heatmap.total.value == Int.max)
+    }
+
     @Test func `Known tokens remain available without a monetary cost`() {
         let point = SyncDailyPoint(
             dayKey: "2026-09-10",
