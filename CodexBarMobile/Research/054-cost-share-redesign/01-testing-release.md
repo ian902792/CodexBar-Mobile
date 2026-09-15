@@ -50,7 +50,7 @@
 - 最终 source commit：`d5a4a293014d76d3166848fc8804e50084d456ab`（`fix(ios): label selected heatmap account`）。build 206 的完整 iOS 27 测试、lint、CI policy 与 fork README guard 均通过。
 - 最终 Archive：`/Volumes/StudioSSD/Developer/BuildScratch/CodexBar/Archives/CodexBarMobile-2.0.0-206.xcarchive`；archive `Info.plist` SHA-256 为 `5b7f0b269e19d11766fcb1500599768e827f70f01adc9d548dd1a30d0591859e`。主 App、Widget、Push Extension 都是 `2.0.0 (206)`，`codesign --verify --deep --strict` 通过，CloudKit container environment 为 `Production`。
 - 最终 TestFlight 上传：Xcode export/upload 的 Content Delivery 回执为 `UPLOAD SUCCEEDED with no errors`，delivery UUID `8a991a13-9671-4d81-9f7b-d2cac3bb60b8`。App Store Connect 回读：build `206` 为 `VALID`，已绑定 App Store version `2.0.0`（`0dff79b3-74c6-4747-9022-34c0e70e81e9`），且出现在 `Internal` 测试组中；`usesNonExemptEncryption=false`。
-- 版本准备：四语言 What’s New 均存在；App Store version 已于 `2026-09-15T00:56:50.480Z` 通过 review submission `81f04f3d-9dbe-4338-95cd-afe28590d240` 送审，当前 `WAITING_FOR_REVIEW` / `MANUAL`。
+- 当时的版本准备快照：四语言 What’s New 均存在，App Store version 为 `PREPARE_FOR_SUBMISSION` / `MANUAL`，尚未创建 review submission。后续最终 build 211 的送审结果记录在上方“最终 TestFlight”条目中。
 - build 204、205 均已上传但明确不作为候选；它们不会绑定到 App Store 2.0.0 version 或最终 Internal 测试组。
 - Source commit：`70b39c7f0e70cccda5b50c5d6f2a6c894bb47354`（`feat(ios): redesign cost sharing cards`）。归档时工作树除既有未跟踪 `output/`、`tmp/` 外无变化。
 - Archive：`/tmp/CodexBarMobile-2.0.0-203-share.xcarchive`，41 MB；归档内容清单 SHA-256 为 `0852047182f78a70a83bfb155b385526259550d48c9665bf134fbde9f210bc46`。
