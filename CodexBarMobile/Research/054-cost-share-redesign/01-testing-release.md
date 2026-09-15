@@ -20,7 +20,7 @@
 - CloudKit Production 审计：相对最近公开 tag `v0.58.0.1-mobile.1.23.0`，`CloudConstants.swift`、record type/field/index/zone/subscription、`providerPayloadVersion` 与新增非 optional shared 字段审计均无输出；本轮没有新 schema，结论为 **NO_DEPLOY**。
 - 最终 PR 审查：PR #129 在 `f53882a1c0b1762f8882f14f070f520ee1a0ee8d` 获得 clean Codex review，0 个未解决线程；`Scripts/check_pr_review_gate.sh 129` 通过。PR 于 2026-09-14 合并到 `mobile-dev`，merge commit 为 `75a5d58420f55ef3e7b63dc22081eedc9c2a1d97`。
 - 最终 Archive：`/Volumes/StudioSSD/Developer/BuildScratch/CodexBar/Archives/CodexBarMobile-2.0.0-211.xcarchive`；归档主 App、Widget、Push Extension、Sync framework 均为 `2.0.0 (211)`，`codesign --verify --deep --strict` 通过，主 App CloudKit environment 为 `Production`。
-- 最终 TestFlight：Xcode 27 Content Delivery 返回 `Upload succeeded` / `EXPORT SUCCEEDED`。App Store Connect build `211`（ID `ff4b1e77-9c57-43d1-bab1-16a3116b5e9c`）已为 `VALID`、`usesNonExemptEncryption=false`，已绑定 App Store version `2.0.0`（ID `0dff79b3-74c6-4747-9022-34c0e70e81e9`）并自动出现在 `Internal` beta group。App Store version 保持 `PREPARE_FOR_SUBMISSION` / `MANUAL`，未创建 review submission。
+- 最终 TestFlight：Xcode 27 Content Delivery 返回 `Upload succeeded` / `EXPORT SUCCEEDED`。App Store Connect build `211`（ID `ff4b1e77-9c57-43d1-bab1-16a3116b5e9c`）已为 `VALID`、`usesNonExemptEncryption=false`，已绑定 App Store version `2.0.0`（ID `0dff79b3-74c6-4747-9022-34c0e70e81e9`）并自动出现在 `Internal` beta group。App Store version 已于 `2026-09-15T00:56:50.480Z` 通过 App Store Connect API 送审（review submission `81f04f3d-9dbe-4338-95cd-afe28590d240`）；当前为 `WAITING_FOR_REVIEW` / `MANUAL`，因此审核通过后仍需手动发布。
 
 ## 数据与同步边界
 
@@ -50,7 +50,7 @@
 - 最终 source commit：`d5a4a293014d76d3166848fc8804e50084d456ab`（`fix(ios): label selected heatmap account`）。build 206 的完整 iOS 27 测试、lint、CI policy 与 fork README guard 均通过。
 - 最终 Archive：`/Volumes/StudioSSD/Developer/BuildScratch/CodexBar/Archives/CodexBarMobile-2.0.0-206.xcarchive`；archive `Info.plist` SHA-256 为 `5b7f0b269e19d11766fcb1500599768e827f70f01adc9d548dd1a30d0591859e`。主 App、Widget、Push Extension 都是 `2.0.0 (206)`，`codesign --verify --deep --strict` 通过，CloudKit container environment 为 `Production`。
 - 最终 TestFlight 上传：Xcode export/upload 的 Content Delivery 回执为 `UPLOAD SUCCEEDED with no errors`，delivery UUID `8a991a13-9671-4d81-9f7b-d2cac3bb60b8`。App Store Connect 回读：build `206` 为 `VALID`，已绑定 App Store version `2.0.0`（`0dff79b3-74c6-4747-9022-34c0e70e81e9`），且出现在 `Internal` 测试组中；`usesNonExemptEncryption=false`。
-- 版本准备：四语言 What’s New 均存在，App Store version 保持 `PREPARE_FOR_SUBMISSION` / `MANUAL`；该 version 没有任何 review submission，未提交 App Review。
+- 版本准备：四语言 What’s New 均存在；App Store version 已于 `2026-09-15T00:56:50.480Z` 通过 review submission `81f04f3d-9dbe-4338-95cd-afe28590d240` 送审，当前 `WAITING_FOR_REVIEW` / `MANUAL`。
 - build 204、205 均已上传但明确不作为候选；它们不会绑定到 App Store 2.0.0 version 或最终 Internal 测试组。
 - Source commit：`70b39c7f0e70cccda5b50c5d6f2a6c894bb47354`（`feat(ios): redesign cost sharing cards`）。归档时工作树除既有未跟踪 `output/`、`tmp/` 外无变化。
 - Archive：`/tmp/CodexBarMobile-2.0.0-203-share.xcarchive`，41 MB；归档内容清单 SHA-256 为 `0852047182f78a70a83bfb155b385526259550d48c9665bf134fbde9f210bc46`。

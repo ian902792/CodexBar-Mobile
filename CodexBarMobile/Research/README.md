@@ -53,5 +53,5 @@ This directory contains research documents for features being considered for Cod
 
 | 051 | v0.58.0 single upstream sync (10 releases; issues #108/#109/#111–118) | `in-progress` | Mac0.58.0.1已正式发布；iOS未上传，追加历史调查另行处理 | [051-v058-upstream-sync/00-overview.md](051-v058-upstream-sync/00-overview.md) | 2026-09-10 |
 | 052 | iOS历史完整性与后台刷新 | `in-progress` | 已确认代码缺陷已修复；问题手机金额对账待设备/页面确认 | [052-history-refresh-integrity/00-research.md](052-history-refresh-integrity/00-research.md) | 2026-09-10 |
-| 054 | Cost 分享编辑页与 Heatmap 模板 | `done` | 2.0.0 (211) 已合并并在 Internal TestFlight 为 VALID；App Review 与 Heatmap In-App Event 均保持未提交 | [054-cost-share-redesign/00-design.md](054-cost-share-redesign/00-design.md) | 2026-09-14 |
+| 054 | Cost 分享编辑页与 Heatmap 模板 | `done` | 2.0.0 (211) 已合并、Internal TestFlight 为 VALID，并已送 App Review（`WAITING_FOR_REVIEW` / `MANUAL`）；Heatmap In-App Event 仍未创建 | [054-cost-share-redesign/00-design.md](054-cost-share-redesign/00-design.md) | 2026-09-14 |
 | 055 | iOS 2.0 App Store 版本与 Token Activity 活动 | `draft` | 2.0.0 版本草稿与四语更新说明已创建；Xcode/iOS 27 已实际验证，活动视觉参考与 deep link gate 独立待办 | [055-ios-2-app-store-event/00-plan.md](055-ios-2-app-store-event/00-plan.md) | 2026-09-14 |

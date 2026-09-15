@@ -5,10 +5,10 @@
 ## App Store 2.0.0
 
 - App Store Connect version ID：`0dff79b3-74c6-4747-9022-34c0e70e81e9`。
-- 状态：`PREPARE_FOR_SUBMISSION`，发布方式：`MANUAL`。
+- 状态：`WAITING_FOR_REVIEW`；发布方式：`MANUAL`（审核通过后仍需手动发布）。
 - `en-US`、`zh-Hans`、`zh-Hant`、`ja` 更新说明已通过 API 写入并逐项回读一致。
 - 更新说明优先级：iOS 27 / iPadOS 27、全新数据架构与显著性能提升、Token Activity Heatmap、iPad 宽屏布局、分享卡片重构。
-- build 211 已归档、上传并处理为 `VALID`，已绑定此 2.0.0 version 且自动出现在 Internal TestFlight group；version 仍为 `PREPARE_FOR_SUBMISSION` / `MANUAL`，没有 review submission。build 203 使用 Xcode 26.6 / iOS 26.5 SDK，保留为历史 Internal TestFlight build；build 204 至 210 因后续 PR 审查修复而淘汰。
+- build 211 已归档、上传并处理为 `VALID`，已绑定此 2.0.0 version 且自动出现在 Internal TestFlight group；已于 `2026-09-15T00:56:50.480Z` 通过 App Store Connect API 创建 review submission `81f04f3d-9dbe-4338-95cd-afe28590d240`，提交项为 version 2.0.0 / build 211，当前 `WAITING_FOR_REVIEW` / `MANUAL`。build 203 使用 Xcode 26.6 / iOS 26.5 SDK，保留为历史 Internal TestFlight build；build 204 至 210 因后续 PR 审查修复而淘汰。
 
 ## Token Activity In-App Event
 
