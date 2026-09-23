@@ -5,6 +5,7 @@ import SwiftUI
 struct CodexBarWidgetsBundle: WidgetBundle {
     var body: some Widget {
         CodexBarStatusWidget()
+        UsageBarsWidget()
     }
 }
 

@@ -503,7 +503,7 @@ struct ProviderDetailView: View {
                     UsageCardView(
                         label: ProviderWindowLabel.localized(
                             window.label,
-                            fallback: self.defaultLabel(at: index),
+                            fallback: ProviderWindowLabel.fallback(at: index),
                             providerID: self.provider.providerID),
                         window: window,
                         tintColor: self.providerColor,
@@ -837,14 +837,6 @@ struct ProviderDetailView: View {
 
     private var providerColor: Color {
         ProviderColorPalette.color(for: self.provider)
-    }
-
-    private func defaultLabel(at index: Int) -> String {
-        switch index {
-        case 0: String(localized: "Session")
-        case 1: String(localized: "Weekly")
-        default: "\(String(localized: "Limit")) \(index + 1)"
-        }
     }
 
     static func formatUSD(_ value: Double) -> String { CostFormatting.usd(value) }

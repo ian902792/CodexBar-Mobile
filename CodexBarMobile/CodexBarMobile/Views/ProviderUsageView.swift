@@ -73,7 +73,7 @@ struct ProviderUsageView: View {
                     UsageCardView(
                         label: ProviderWindowLabel.localized(
                             window.label,
-                            fallback: self.defaultLabel(at: index),
+                            fallback: ProviderWindowLabel.fallback(at: index),
                             providerID: self.provider.providerID),
                         window: window,
                         tintColor: self.providerColor,
@@ -360,14 +360,6 @@ struct ProviderUsageView: View {
             },
             cost.completeHistoryCostUSD(at: now).map { "\(String(localized: "30d")): \(Self.formatUSD($0))" },
         ].compactMap { $0 }
-    }
-
-    private func defaultLabel(at index: Int) -> String {
-        switch index {
-        case 0: return String(localized: "Session")
-        case 1: return String(localized: "Weekly")
-        default: return "\(String(localized: "Limit")) \(index + 1)"
-        }
     }
 
     private func subscriptionMetadataLine() -> String? {

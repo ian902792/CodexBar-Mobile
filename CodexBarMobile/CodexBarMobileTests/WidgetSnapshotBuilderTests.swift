@@ -92,6 +92,41 @@ struct WidgetSnapshotBuilderTests {
     }
 
     @Test
+    func `keeps every provider and its rate windows for the usage bars widget`() {
+        let now = Self.date("2026-06-28T12:00:00Z")
+        let reset = now.addingTimeInterval(3600)
+        let windowed = ProviderUsageSnapshot(
+            providerID: "fictional",
+            providerName: "Fictional AI",
+            primary: SyncRateWindow(usedPercent: 12, windowMinutes: 300, resetsAt: reset, resetDescription: nil),
+            secondary: SyncRateWindow(usedPercent: 140, windowMinutes: 10080, resetsAt: nil, resetDescription: nil),
+            accountEmail: nil,
+            loginMethod: nil,
+            statusMessage: nil,
+            isError: false,
+            lastUpdated: now,
+            costSummary: nil)
+        let others = (0..<7).map { index in
+            Self.provider(
+                id: "p\(index)", name: "P\(index)", email: nil, usage: Double(index),
+                todayCost: nil, tokens: nil, updated: now)
+        }
+        let snapshot = SyncedUsageSnapshot(
+            providers: [windowed] + others,
+            syncTimestamp: now,
+            deviceName: "MacBook Pro",
+            deviceID: "device-a")
+
+        let widget = CodexBarWidgetSnapshotBuilder.makeSnapshot(from: [snapshot], now: now)
+
+        #expect(widget.topProviders.count == 8)
+        let windows = widget.topProviders.first { $0.providerID == "fictional" }?.windows
+        #expect(windows?.map(\.label) == [ProviderWindowLabel.fallback(at: 0), ProviderWindowLabel.fallback(at: 1)])
+        #expect(windows?.map(\.usedPercent) == [12, 100])
+        #expect(windows?.first?.resetsAt == reset)
+    }
+
+    @Test
     func `sums local-cost provider accounts across devices`() {
         let now = Self.date("2026-06-28T12:00:00Z")
         let older = Self.provider(
@@ -745,10 +780,10 @@ struct WidgetSnapshotBuilderTests {
         #expect(insights?.totalTodayCostIsKnown == true)
         #expect(insights?.totalTodayCostIsLowerBound == true)
         #expect(insights?.hasIncompleteCostData == true)
-        #expect(insights?.providerRows.first?.todayCostDisplayValue == "≥$200.95")
+        #expect(insights?.providerRows.first?.todayCostDisplayValue == "≥\(CostFormatting.usd(200.95))")
         #expect(share?.todayCostIsKnown == true)
         #expect(share?.todayCostIsLowerBound == true)
-        #expect(share?.todayCostDisplayValue == "≥$200.95")
+        #expect(share?.todayCostDisplayValue == "≥\(CostFormatting.usd(200.95))")
         #expect(abs((widget.todayCostUSD ?? 0) - 200.95) < 0.0001)
         #expect(widget.todayCostIsLowerBound == true)
         #expect(widget.topProviders.allSatisfy { $0.todayCostIsLowerBound == true })
@@ -798,7 +833,7 @@ struct WidgetSnapshotBuilderTests {
         #expect(insights?.totalTodayCostIsKnown == true)
         #expect(insights?.totalTodayCostIsLowerBound == false)
         #expect(insights?.hasIncompleteCostData == true)
-        #expect(insights?.providerRows.first?.todayCostDisplayValue == "$7.37")
+        #expect(insights?.providerRows.first?.todayCostDisplayValue == CostFormatting.usd(7.37))
         #expect(widget.todayCostUSD == 7.37)
         #expect(widget.todayCostIsLowerBound == nil)
         #expect(widget.topProviders.first?.todayCostIsLowerBound == nil)
@@ -1241,9 +1276,9 @@ struct WidgetSnapshotBuilderTests {
         hasModernWriter: Bool) -> String
     {
         if hasModernWriter {
-            return isNewReader ? "≥$200.95" : "—"
+            return isNewReader ? "≥\(CostFormatting.usd(200.95))" : "—"
         }
-        return "$200.95"
+        return CostFormatting.usd(200.95)
     }
 
     private static func readTodayCostMatrixPhone(

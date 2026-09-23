@@ -5,6 +5,7 @@ All notable changes to the CodexBar iOS companion app will be documented in this
 ## [2.0.0 (211)] — Unreleased
 
 ### Added
+- Usage Bars widget (small/medium): per-rate-window bars, used/remaining percent and reset countdown in the provider tint on an always-dark card; optional provider picker (`AppEntity`), defaults to the highest usage. Widget summaries now carry localized windows and the synced icon tint; the 6-provider cap on widget summaries is removed (layouts already limit their rows). `ProviderColorPalette`/`ProviderWindowLabel` moved to `CodexBarWidgetShared/`.
 - Content-sized adaptive layouts: two-column Usage cards in roomy portrait windows, Usage/Settings list-detail in roomy landscape with bottom tabs retained on every shipping iPhone/iPad orientation, paired Cost summary/charts, and wider provider heatmap grids. Trailing navigation is confined to illustrative Duo previews; Duo-specific SDK/hinge behavior is not yet verified.
 
 - Shared yearly Token Activity heatmaps in provider details, with provider colors and explicit unavailable states; a combined daily-token heatmap on Cost opens all provider heatmaps, fully expanded with full-width charts and larger headings. Positive-day quartile colors distinguish high usage without clipping at 10M; compact cells expose more months and support day selection by tap or long press.
@@ -12,10 +13,12 @@ All notable changes to the CodexBar iOS companion app will be documented in this
 - Preserve token availability in the local daily ledger independently of cost availability.
 
 ### Changed
+- New pixel-art app icon (`>_` prompt over a usage bar, black field) on iOS and Mac. The Mac `.icns` is rendered through Icon Composer again so macOS 26+ applies the system squircle instead of framing the icon in a gray plate.
 - Move Codex Service Mix from the global Cost dashboard to Codex details.
 - Refresh Classic and Vibe share cards with clearer hierarchy and replace the stacked segmented controls with compact template, range, and provider selectors. The iPad editor shows the preview and controls side by side.
 
 ### Fixed
+- Lift near-black provider tints (Grok, xAI, Zed, synced `#000000` icon tints) to a minimum luminance in Dark Mode so percentages and bars stay readable on dark cards; Light Mode colors are unchanged.
 - Dismiss provider search before opening details and measure adaptive layout independently of keyboard occlusion. Verify compact-phone navigation, bottom content clearance, and iPad selection across rotation in the running app.
 
 ## [1.24.0 (199)] — 2026-09-10

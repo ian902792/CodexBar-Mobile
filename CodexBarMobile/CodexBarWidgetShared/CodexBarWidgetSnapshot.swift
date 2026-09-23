@@ -9,6 +9,13 @@ enum CodexBarWidgetSnapshotState: String, Codable, Equatable, Sendable {
     case error
 }
 
+struct CodexBarWidgetUsageWindow: Codable, Equatable, Sendable {
+    /// Already localized (e.g. "每週"), resolved when the summary is built.
+    let label: String
+    let usedPercent: Double
+    let resetsAt: Date?
+}
+
 struct CodexBarWidgetProviderSummary: Codable, Equatable, Identifiable, Sendable {
     let id: String
     let providerName: String
@@ -22,6 +29,8 @@ struct CodexBarWidgetProviderSummary: Codable, Equatable, Identifiable, Sendable
     let isError: Bool
     let statusMessage: String?
     let lastUpdated: Date
+    let windows: [CodexBarWidgetUsageWindow]?
+    let tintHex: String?
 
     init(
         id: String,
@@ -35,7 +44,9 @@ struct CodexBarWidgetProviderSummary: Codable, Equatable, Identifiable, Sendable
         tokensToday: Int?,
         isError: Bool,
         statusMessage: String?,
-        lastUpdated: Date)
+        lastUpdated: Date,
+        windows: [CodexBarWidgetUsageWindow]? = nil,
+        tintHex: String? = nil)
     {
         self.id = id
         self.providerName = providerName
@@ -49,6 +60,8 @@ struct CodexBarWidgetProviderSummary: Codable, Equatable, Identifiable, Sendable
         self.isError = isError
         self.statusMessage = statusMessage
         self.lastUpdated = lastUpdated
+        self.windows = windows
+        self.tintHex = tintHex
     }
 
     var displaySubtitle: String? {
@@ -139,7 +152,17 @@ struct CodexBarWidgetSnapshot: Codable, Equatable, Sendable {
                     tokensToday: 366_000,
                     isError: false,
                     statusMessage: nil,
-                    lastUpdated: now.addingTimeInterval(-120)),
+                    lastUpdated: now.addingTimeInterval(-120),
+                    windows: [
+                        CodexBarWidgetUsageWindow(
+                            label: ProviderWindowLabel.fallback(at: 0),
+                            usedPercent: 78,
+                            resetsAt: now.addingTimeInterval(2 * 3600)),
+                        CodexBarWidgetUsageWindow(
+                            label: ProviderWindowLabel.fallback(at: 1),
+                            usedPercent: 43,
+                            resetsAt: now.addingTimeInterval(5 * 86400)),
+                    ]),
                 CodexBarWidgetProviderSummary(
                     id: "claude|sample",
                     providerName: "Claude",
@@ -151,7 +174,17 @@ struct CodexBarWidgetSnapshot: Codable, Equatable, Sendable {
                     tokensToday: 456_000,
                     isError: false,
                     statusMessage: nil,
-                    lastUpdated: now.addingTimeInterval(-300)),
+                    lastUpdated: now.addingTimeInterval(-300),
+                    windows: [
+                        CodexBarWidgetUsageWindow(
+                            label: ProviderWindowLabel.fallback(at: 0),
+                            usedPercent: 42,
+                            resetsAt: now.addingTimeInterval(2 * 3600)),
+                        CodexBarWidgetUsageWindow(
+                            label: ProviderWindowLabel.fallback(at: 1),
+                            usedPercent: 20,
+                            resetsAt: now.addingTimeInterval(5 * 86400)),
+                    ]),
                 CodexBarWidgetProviderSummary(
                     id: "openrouter|sample",
                     providerName: "OpenRouter",
@@ -389,7 +422,7 @@ enum CodexBarWidgetSnapshotBuilder {
             thirtyDayCostUSD: !thirtyDayCostIsIncomplete && thirtyDayCost > 0 ? thirtyDayCost : nil,
             todayTokens: todayTokens > 0 ? todayTokens : nil,
             maxUsagePercent: maxUsage,
-            topProviders: Array(topProviders.prefix(6)),
+            topProviders: topProviders,
             message: nil,
             isStale: latestSyncAt.map { now.timeIntervalSince($0) > Self.staleInterval } ?? false)
     }
@@ -405,6 +438,17 @@ enum CodexBarWidgetSnapshotBuilder {
             return min(100, max(0, budget.usedAmount / budget.limitAmount * 100))
         }
         let usagePercent = (windows + [budgetPercent].compactMap(\.self)).max()
+        let usageWindows = provider.allRateWindows.enumerated()
+            .filter { $0.element.usageKnown }
+            .map { index, window in
+                CodexBarWidgetUsageWindow(
+                    label: ProviderWindowLabel.localized(
+                        window.label,
+                        fallback: ProviderWindowLabel.fallback(at: index),
+                        providerID: provider.providerID),
+                    usedPercent: min(100, max(0, window.usedPercent)),
+                    resetsAt: window.resetsAt)
+            }
         let accountKey = provider.accountEmail ?? "_"
         return CodexBarWidgetProviderSummary(
             id: "\(provider.providerID)|\(accountKey)",
@@ -418,7 +462,9 @@ enum CodexBarWidgetSnapshotBuilder {
             tokensToday: today?.tokens,
             isError: provider.isError,
             statusMessage: provider.statusMessage,
-            lastUpdated: provider.lastUpdated)
+            lastUpdated: provider.lastUpdated,
+            windows: usageWindows,
+            tintHex: provider.providerIconTintHex)
     }
 
     private static func todayTotals(

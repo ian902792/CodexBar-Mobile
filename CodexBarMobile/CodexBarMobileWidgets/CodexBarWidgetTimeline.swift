@@ -30,31 +30,7 @@ struct CodexBarWidgetProvider: AppIntentTimelineProvider {
         in _: Context
     ) async -> Timeline<CodexBarWidgetEntry> {
         let now = Date()
-        #if targetEnvironment(simulator)
-        if ProcessInfo.processInfo.environment["CODEXBAR_WIDGET_DISABLE_SIMULATOR_MOCK"] != "1" {
-            let entry = CodexBarWidgetEntry(
-                date: now,
-                configuration: configuration,
-                snapshot: .simulatorMock(now: now))
-            return Timeline(
-                entries: [entry],
-                policy: .after(now.addingTimeInterval(15 * 60)))
-        }
-        #endif
-        let syncManager = CloudSyncManager.shared
-        async let result = syncManager.fetchAllDeviceSnapshots()
-        async let providerLinkages = syncManager.fetchProviderAccountLinkages()
-        async let deviceLifecycleEvents = syncManager.fetchDeviceLifecycleEvents()
-        let fallback = syncManager.fetchKVSSnapshot()
-        let syncResult = await result
-        let linkages = await providerLinkages
-        let lifecycleEvents = await deviceLifecycleEvents
-        let snapshot = CodexBarWidgetSnapshotBuilder.makeSnapshot(
-            from: syncResult,
-            fallbackKVSSnapshot: fallback,
-            providerLinkages: linkages,
-            deviceLifecycleEvents: lifecycleEvents,
-            now: now)
+        let snapshot = await Self.fetchSnapshot(now: now)
         let entry = CodexBarWidgetEntry(
             date: now,
             configuration: configuration,
@@ -67,5 +43,27 @@ struct CodexBarWidgetProvider: AppIntentTimelineProvider {
         return Timeline(
             entries: [entry],
             policy: .after(now.addingTimeInterval(refreshInterval)))
+    }
+
+    static func fetchSnapshot(now: Date) async -> CodexBarWidgetSnapshot {
+        #if targetEnvironment(simulator)
+        if ProcessInfo.processInfo.environment["CODEXBAR_WIDGET_DISABLE_SIMULATOR_MOCK"] != "1" {
+            return .simulatorMock(now: now)
+        }
+        #endif
+        let syncManager = CloudSyncManager.shared
+        async let result = syncManager.fetchAllDeviceSnapshots()
+        async let providerLinkages = syncManager.fetchProviderAccountLinkages()
+        async let deviceLifecycleEvents = syncManager.fetchDeviceLifecycleEvents()
+        let fallback = syncManager.fetchKVSSnapshot()
+        let syncResult = await result
+        let linkages = await providerLinkages
+        let lifecycleEvents = await deviceLifecycleEvents
+        return CodexBarWidgetSnapshotBuilder.makeSnapshot(
+            from: syncResult,
+            fallbackKVSSnapshot: fallback,
+            providerLinkages: linkages,
+            deviceLifecycleEvents: lifecycleEvents,
+            now: now)
     }
 }

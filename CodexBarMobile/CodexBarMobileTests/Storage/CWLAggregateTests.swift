@@ -657,17 +657,18 @@ struct CWLAggregateTests {
 
     @Test
     func `T6: cutoffDayKey follows local day when UTC has advanced`() throws {
-        let previousDefault = NSTimeZone.default
-        NSTimeZone.default = try #require(TimeZone(identifier: "America/Los_Angeles"))
-        defer { NSTimeZone.default = previousDefault }
+        // Pass the zone explicitly: mutating NSTimeZone.default does not
+        // reliably change TimeZone.current, so the test depended on the
+        // simulator's own zone.
+        let losAngeles = try #require(TimeZone(identifier: "America/Los_Angeles"))
 
         var utcCalendar = Calendar(identifier: .gregorian)
         utcCalendar.timeZone = try #require(TimeZone(identifier: "UTC"))
         let utcNextDay = try #require(utcCalendar.date(
             from: DateComponents(year: 2026, month: 5, day: 29, hour: 0, minute: 30)))
 
-        #expect(CostLedgerService.cutoffDayKey(windowDays: 1, asOf: utcNextDay) == "2026-05-28")
-        #expect(CostLedgerService.cutoffDayKey(windowDays: 7, asOf: utcNextDay) == "2026-05-22")
+        #expect(CostLedgerService.cutoffDayKey(windowDays: 1, asOf: utcNextDay, timeZone: losAngeles) == "2026-05-28")
+        #expect(CostLedgerService.cutoffDayKey(windowDays: 7, asOf: utcNextDay, timeZone: losAngeles) == "2026-05-22")
     }
 
     @Test

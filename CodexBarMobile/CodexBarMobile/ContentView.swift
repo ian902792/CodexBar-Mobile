@@ -4323,6 +4323,10 @@ private enum MobileReleaseNotesCatalog {
                     localized: "Tap or hold a day to see its tokens. Missing history stays distinct from zero. Codex Service Mix lives in Codex details."),
                 String(
                     localized: "Create polished share cards with a preview-first editor, refreshed Classic and Vibe designs, and a Token Activity heatmap for all providers or one provider."),
+                String(
+                    localized: "Add the new Usage Bars widget to see each limit's bar and reset countdown at a glance, on a dark card in your provider's color."),
+                String(
+                    localized: "Low-contrast provider colors, like Grok's, are now easy to read in Dark Mode, and the app has a new pixel-art icon."),
             ])]),
         ReleaseNotesVersion(
             version: "1.24.0",
