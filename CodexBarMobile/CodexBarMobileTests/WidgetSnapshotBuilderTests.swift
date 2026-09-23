@@ -780,10 +780,10 @@ struct WidgetSnapshotBuilderTests {
         #expect(insights?.totalTodayCostIsKnown == true)
         #expect(insights?.totalTodayCostIsLowerBound == true)
         #expect(insights?.hasIncompleteCostData == true)
-        #expect(insights?.providerRows.first?.todayCostDisplayValue == "≥$200.95")
+        #expect(insights?.providerRows.first?.todayCostDisplayValue == "≥\(CostFormatting.usd(200.95))")
         #expect(share?.todayCostIsKnown == true)
         #expect(share?.todayCostIsLowerBound == true)
-        #expect(share?.todayCostDisplayValue == "≥$200.95")
+        #expect(share?.todayCostDisplayValue == "≥\(CostFormatting.usd(200.95))")
         #expect(abs((widget.todayCostUSD ?? 0) - 200.95) < 0.0001)
         #expect(widget.todayCostIsLowerBound == true)
         #expect(widget.topProviders.allSatisfy { $0.todayCostIsLowerBound == true })
@@ -833,7 +833,7 @@ struct WidgetSnapshotBuilderTests {
         #expect(insights?.totalTodayCostIsKnown == true)
         #expect(insights?.totalTodayCostIsLowerBound == false)
         #expect(insights?.hasIncompleteCostData == true)
-        #expect(insights?.providerRows.first?.todayCostDisplayValue == "$7.37")
+        #expect(insights?.providerRows.first?.todayCostDisplayValue == CostFormatting.usd(7.37))
         #expect(widget.todayCostUSD == 7.37)
         #expect(widget.todayCostIsLowerBound == nil)
         #expect(widget.topProviders.first?.todayCostIsLowerBound == nil)
@@ -1276,9 +1276,9 @@ struct WidgetSnapshotBuilderTests {
         hasModernWriter: Bool) -> String
     {
         if hasModernWriter {
-            return isNewReader ? "≥$200.95" : "—"
+            return isNewReader ? "≥\(CostFormatting.usd(200.95))" : "—"
         }
-        return "$200.95"
+        return CostFormatting.usd(200.95)
     }
 
     private static func readTodayCostMatrixPhone(
