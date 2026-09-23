@@ -28,6 +28,7 @@ struct CodexBarMobileApp: App {
         if arguments.contains("UI_TEST_SKIP_ONBOARDING") {
             UserDefaults.standard.set(currentVersion, forKey: "onboardingSeenVersion")
         }
+        WidgetDisplayPreferences.mirrorAppSettings()
 
         if arguments.contains("UI_TEST_PREVIEW_DATA") {
             _usageData = State(initialValue: PreviewData.makeSyncedUsageData())

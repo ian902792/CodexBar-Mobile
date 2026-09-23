@@ -63,6 +63,7 @@
 		4012D7EC2F2083F196B70B84 /* MoonshotBalanceCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC3BD9EFBA38613A27A03C6 /* MoonshotBalanceCard.swift */; };
 		44179B7669F19C60FFA54FCD /* CostShareService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C72A51985FA627302CDAC57 /* CostShareService.swift */; };
 		44E3492D9285BDA200F789FB /* ProviderSnapshotMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7BC466DA9C12357656F59CB /* ProviderSnapshotMerger.swift */; };
+		47B7E83E55C030BB00C84504 /* WidgetDisplayPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5F41F108AEDF4F2FE2EC0A9 /* WidgetDisplayPreferences.swift */; };
 		47E56DB489686A9CF257EA70 /* CloudSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14429075896F45B38264DC77 /* CloudSyncManager.swift */; };
 		48A7DACDCA4F25935E003084 /* V037Snapshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19CF055050A36BB624EF0AA0 /* V037Snapshots.swift */; };
 		49148E58B3AF1030559597F2 /* CWLEquivalenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B9DE156699CE9E8DF9A818 /* CWLEquivalenceTests.swift */; };
@@ -126,6 +127,7 @@
 		923EAFD177F69D9DB697A002 /* CodexBarWidgetIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E024B1E38E5CEBF63EDB05E3 /* CodexBarWidgetIntent.swift */; };
 		9360E35B526CE57E9C5ED2D0 /* DeepSeekUsageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477F069536CCC8340DF0B198 /* DeepSeekUsageCard.swift */; };
 		93754684AD608ECF9833F867 /* V026ViewSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157142B7B8F8ADF6A79DCD07 /* V026ViewSmokeTests.swift */; };
+		93A07E8FF1B2CF14511EC341 /* WidgetDisplayPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5F41F108AEDF4F2FE2EC0A9 /* WidgetDisplayPreferences.swift */; };
 		95421AE3BAA4C16314A2BF1A /* QuotaTransitionSubscriptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2BA90E690B546A77A86EE29 /* QuotaTransitionSubscriptions.swift */; };
 		979DD3366C02E4457C7D6D0E /* AccountIdentityNormalize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252E82C4DE92C8734EDD3F33 /* AccountIdentityNormalize.swift */; };
 		9A1752C4414B06CE642241FB /* CodexBarSync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D34FB83FA26B8508F5A3D9FB /* CodexBarSync.framework */; };
@@ -442,6 +444,7 @@
 		D094735B11258986C3F6032E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D2E4EAED2E5EE71721D32253 /* AccountIdentityNormalizeContractTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountIdentityNormalizeContractTests.swift; sourceTree = "<group>"; };
 		D34FB83FA26B8508F5A3D9FB /* CodexBarSync.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CodexBarSync.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5F41F108AEDF4F2FE2EC0A9 /* WidgetDisplayPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDisplayPreferences.swift; sourceTree = "<group>"; };
 		D797A59C0C527242716F6546 /* CodexBarWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexBarWidgetView.swift; sourceTree = "<group>"; };
 		DBFBF4B7241CE271554F183C /* ZaiHourlyChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZaiHourlyChart.swift; sourceTree = "<group>"; };
 		DC3A52976034BA3F0CA44327 /* CodexBarMobileApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexBarMobileApp.swift; sourceTree = "<group>"; };
@@ -604,6 +607,7 @@
 				BEF9064938B899CE34FF15FC /* ProviderColorPalette.swift */,
 				B7BC466DA9C12357656F59CB /* ProviderSnapshotMerger.swift */,
 				4F08974FE5ADF851E663690F /* ProviderWindowLabel.swift */,
+				D5F41F108AEDF4F2FE2EC0A9 /* WidgetDisplayPreferences.swift */,
 			);
 			path = CodexBarWidgetShared;
 			sourceTree = "<group>";
@@ -1214,6 +1218,7 @@
 				6BEB6B051976D09ED07BFFD3 /* UtilizationAggregateView.swift in Sources */,
 				06AF0C16DB94FEF7CEB249F1 /* UtilizationHistoryView.swift in Sources */,
 				F32843B6E5627A730F7FFBF0 /* V045ProviderCards.swift in Sources */,
+				47B7E83E55C030BB00C84504 /* WidgetDisplayPreferences.swift in Sources */,
 				F17B695DE47773A5DF665875 /* ZaiHourlyChart.swift in Sources */,
 				7BD11914FFDAC4688B440B82 /* ZoomMateCreditsCard.swift in Sources */,
 			);
@@ -1279,6 +1284,7 @@
 				57C973F513DAC5CC5E587DDE /* ProviderSnapshotMerger.swift in Sources */,
 				D58F50198D26F48F42A9D064 /* ProviderWindowLabel.swift in Sources */,
 				8B9A409E8437A4D06CC81DC9 /* UsageBarsWidget.swift in Sources */,
+				93A07E8FF1B2CF14511EC341 /* WidgetDisplayPreferences.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -3247,13 +3247,13 @@
         }
       }
     },
-    "Add the new Usage Bars widget to see each limit's bar and reset countdown at a glance, on a dark card in your provider's color.": {
+    "Add the new Usage Bars widget to see each limit's bar and reset countdown at a glance, on a dark card in your provider's color. It follows your Show remaining usage setting.": {
       "extractionState": "manual",
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Add the new Usage Bars widget to see each limit's bar and reset countdown at a glance, on a dark card in your provider's color." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "新增「用量条」小组件：在深色卡片上以 Provider 品牌色一眼看到各额度的用量条与重置倒计时。" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "新增「用量條」小工具：在深色卡片上以 Provider 品牌色一眼看到各額度的用量條與重設倒數。" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "新しい「使用量バー」ウィジェットで、各上限のバーとリセットまでの時間をプロバイダーの色でひと目で確認できます。" } }
+        "en": { "stringUnit": { "state": "translated", "value": "Add the new Usage Bars widget to see each limit's bar and reset countdown at a glance, on a dark card in your provider's color. It follows your Show remaining usage setting." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "新增「用量条」小组件：在深色卡片上以 Provider 品牌色一眼看到各额度的用量条与重置倒计时，并跟随「显示剩余用量」设置。" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "新增「用量條」小工具：在深色卡片上以 Provider 品牌色一眼看到各額度的用量條與重設倒數，並跟隨「顯示剩餘用量」設定。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "新しい「使用量バー」ウィジェットで、各上限のバーとリセットまでの時間をプロバイダーの色でひと目で確認できます。「残り使用量を表示」の設定にも従います。" } }
       }
     },
     "Added": {

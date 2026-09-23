@@ -1,5 +1,6 @@
 import CodexBarSync
 import Foundation
+import WidgetKit
 
 enum MobileSettingsKeys {
     static let usageCostChartStyle = "usageCostChartStyle"
@@ -83,5 +84,18 @@ enum UsagePercentDisplayMode: String, CaseIterable, Identifiable {
 
     func percentageText(for window: SyncRateWindow) -> String {
         "\(self.percentageValueText(for: window)) \(self.percentSuffix)"
+    }
+}
+
+extension WidgetDisplayPreferences {
+    /// Mirrors the app's "Show remaining usage" setting (including the legacy
+    /// display-mode key) into the App Group and reloads widgets when it changed.
+    static func mirrorAppSettings(from defaults: UserDefaults = .standard) {
+        let showRemaining = defaults.object(forKey: MobileSettingsKeys.showRemainingUsage) as? Bool
+            ?? (defaults.string(forKey: MobileSettingsKeys.usagePercentDisplayMode)
+                == UsagePercentDisplayMode.remaining.rawValue)
+        guard showRemaining != self.showRemainingUsage else { return }
+        self.showRemainingUsage = showRemaining
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }

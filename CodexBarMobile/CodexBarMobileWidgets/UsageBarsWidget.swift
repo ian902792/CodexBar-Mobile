@@ -65,12 +65,17 @@ struct UsageBarsConfigurationIntent: WidgetConfigurationIntent {
 struct UsageBarsEntry: TimelineEntry {
     let date: Date
     let providerID: String?
+    let showRemaining: Bool
     let snapshot: CodexBarWidgetSnapshot
 }
 
 struct UsageBarsTimelineProvider: AppIntentTimelineProvider {
     func placeholder(in _: Context) -> UsageBarsEntry {
-        UsageBarsEntry(date: .now, providerID: nil, snapshot: .placeholder())
+        UsageBarsEntry(
+            date: .now,
+            providerID: nil,
+            showRemaining: WidgetDisplayPreferences.showRemainingUsage,
+            snapshot: .placeholder())
     }
 
     func snapshot(for configuration: UsageBarsConfigurationIntent, in context: Context) async -> UsageBarsEntry {
@@ -82,7 +87,15 @@ struct UsageBarsTimelineProvider: AppIntentTimelineProvider {
 
     func timeline(for configuration: UsageBarsConfigurationIntent, in _: Context) async -> Timeline<UsageBarsEntry> {
         let entry = await self.entry(for: configuration)
-        return Timeline(entries: [entry], policy: .after(entry.date.addingTimeInterval(15 * 60)))
+        // One entry per minute keeps the abbreviated countdowns current until the next fetch.
+        let entries = (0..<15).map { minute in
+            UsageBarsEntry(
+                date: entry.date.addingTimeInterval(Double(minute) * 60),
+                providerID: entry.providerID,
+                showRemaining: entry.showRemaining,
+                snapshot: entry.snapshot)
+        }
+        return Timeline(entries: entries, policy: .after(entry.date.addingTimeInterval(15 * 60)))
     }
 
     private func entry(for configuration: UsageBarsConfigurationIntent) async -> UsageBarsEntry {
@@ -90,6 +103,7 @@ struct UsageBarsTimelineProvider: AppIntentTimelineProvider {
         return UsageBarsEntry(
             date: now,
             providerID: configuration.provider?.id,
+            showRemaining: WidgetDisplayPreferences.showRemainingUsage,
             snapshot: await CodexBarWidgetProvider.fetchSnapshot(now: now))
     }
 }
@@ -128,12 +142,12 @@ struct UsageBarsWidgetView: View {
         .containerBackground(for: .widget) { Color.black }
     }
 
+    /// Windows keep their synced order (Session first, then Weekly, …).
     private func small(_ provider: CodexBarWidgetProviderSummary) -> some View {
         let tint = self.tint(provider)
         let windows = provider.windows ?? []
         // `providers` only keeps summaries with at least one window.
-        let headline = windows.max { $0.usedPercent < $1.usedPercent }!
-        let others = windows.filter { $0 != headline }
+        let headline = windows[0]
         return VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(provider.providerName).font(.caption.bold()).lineLimit(1)
@@ -143,68 +157,63 @@ struct UsageBarsWidgetView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(headline.label).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 Spacer(minLength: 4)
-                Text(Self.percent(headline.usedPercent))
+                Text(Self.percent(self.shown(headline)))
                     .font(.system(size: 26, weight: .bold, design: .rounded))
                     .foregroundStyle(tint)
                     .minimumScaleFactor(0.7)
             }
-            Self.bar(headline.usedPercent, tint: tint, height: 6)
+            Self.bar(self.shown(headline), tint: tint, height: 6)
             HStack {
-                Text("\(String(localized: "Remaining")) \(Self.percent(100 - headline.usedPercent))")
+                // The complement of the headline number: used when showing remaining, and vice versa.
+                Text(
+                    (self.entry.showRemaining ? String(localized: "Used") : String(localized: "Remaining"))
+                        + " " + Self.percent(100 - self.shown(headline)))
                 Spacer(minLength: 4)
-                if let resetsAt = headline.resetsAt {
-                    Self.reset(resetsAt)
-                }
+                self.countdown(headline.resetsAt)
             }
             .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
             Spacer(minLength: 0)
-            ForEach(Array(others.prefix(2).enumerated()), id: \.offset) { _, window in
-                VStack(spacing: 3) {
-                    HStack {
-                        Text(window.label).foregroundStyle(.secondary).lineLimit(1)
-                        Spacer(minLength: 4)
-                        Text(Self.percent(window.usedPercent)).bold().foregroundStyle(tint)
-                    }
-                    .font(.caption2)
-                    Self.bar(window.usedPercent, tint: tint, height: 4)
-                }
+            ForEach(Array(windows.dropFirst().prefix(2).enumerated()), id: \.offset) { _, window in
+                self.windowColumn(window, tint: tint, barHeight: 4)
             }
         }
     }
 
+    /// One row per provider; each window gets its own label, value, countdown and bar.
     private func medium(_ providers: [CodexBarWidgetProviderSummary]) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text("CodexBar").font(.caption2.bold()).foregroundStyle(.secondary)
-                Spacer()
-                if let latestSyncAt = self.entry.snapshot.latestSyncAt {
-                    Self.updated(latestSyncAt)
-                }
-            }
+        VStack(alignment: .leading, spacing: 8) {
             ForEach(providers) { provider in
                 let tint = self.tint(provider)
                 let windows = Array((provider.windows ?? []).prefix(2))
-                let headline = windows.max { $0.usedPercent < $1.usedPercent }
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(provider.providerName).font(.caption.bold()).lineLimit(1)
-                        Spacer(minLength: 4)
-                        if let resetsAt = headline?.resetsAt {
-                            Self.reset(resetsAt).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
-                        }
-                        Text(windows.map { Self.percent($0.usedPercent) }.joined(separator: " / "))
-                            .font(.caption.bold().monospacedDigit())
-                            .foregroundStyle(tint)
-                    }
-                    HStack(spacing: 4) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(provider.providerName).font(.caption.bold()).lineLimit(1)
+                    HStack(spacing: 12) {
                         ForEach(Array(windows.enumerated()), id: \.offset) { _, window in
-                            Self.bar(window.usedPercent, tint: tint, height: 6)
+                            self.windowColumn(window, tint: tint, barHeight: 5)
+                        }
+                        if windows.count == 1 {
+                            Color.clear.frame(maxWidth: .infinity, maxHeight: 0)
                         }
                     }
                 }
             }
             Spacer(minLength: 0)
         }
+    }
+
+    private func windowColumn(_ window: CodexBarWidgetUsageWindow, tint: Color, barHeight: CGFloat) -> some View {
+        VStack(spacing: 3) {
+            HStack(spacing: 4) {
+                Text(window.label).foregroundStyle(.secondary).lineLimit(1)
+                Text(Self.percent(self.shown(window))).bold().monospacedDigit().foregroundStyle(tint)
+                Spacer(minLength: 2)
+                self.countdown(window.resetsAt).foregroundStyle(.secondary)
+            }
+            .font(.caption2)
+            .lineLimit(1)
+            Self.bar(self.shown(window), tint: tint, height: barHeight)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private var empty: some View {
@@ -216,8 +225,23 @@ struct UsageBarsWidgetView: View {
         }
     }
 
+    /// The percentage the app shows for this window: remaining or used, per the app setting.
+    private func shown(_ window: CodexBarWidgetUsageWindow) -> Double {
+        self.entry.showRemaining ? 100 - window.usedPercent : window.usedPercent
+    }
+
     private func tint(_ provider: CodexBarWidgetProviderSummary) -> Color {
         ProviderColorPalette.color(providerID: provider.providerID, tintHex: provider.tintHex)
+    }
+
+    @ViewBuilder
+    private func countdown(_ resetsAt: Date?) -> some View {
+        if let resetsAt, let text = CodexBarWidgetUsageWindow.countdownText(until: resetsAt, now: self.entry.date) {
+            HStack(spacing: 2) {
+                Image(systemName: "clock.arrow.circlepath")
+                Text(text).monospacedDigit()
+            }
+        }
     }
 
     /// Static "5 分鐘前"; `.relative` would tick every second.
@@ -241,16 +265,5 @@ struct UsageBarsWidgetView: View {
             }
         }
         .frame(height: height)
-    }
-
-    @ViewBuilder
-    private static func reset(_ date: Date) -> some View {
-        // A past reset would count up; hide it until the next sync.
-        if date > .now {
-            HStack(spacing: 2) {
-                Image(systemName: "clock.arrow.circlepath")
-                Text(date, style: .relative)
-            }
-        }
     }
 }

@@ -4324,7 +4324,7 @@ private enum MobileReleaseNotesCatalog {
                 String(
                     localized: "Create polished share cards with a preview-first editor, refreshed Classic and Vibe designs, and a Token Activity heatmap for all providers or one provider."),
                 String(
-                    localized: "Add the new Usage Bars widget to see each limit's bar and reset countdown at a glance, on a dark card in your provider's color."),
+                    localized: "Add the new Usage Bars widget to see each limit's bar and reset countdown at a glance, on a dark card in your provider's color. It follows your Show remaining usage setting."),
                 String(
                     localized: "Low-contrast provider colors, like Grok's, are now easy to read in Dark Mode, and the app has a new pixel-art icon."),
             ])]),
@@ -5223,6 +5223,7 @@ private struct UsageSettingsView: View {
                     .font(.body)
                     .fontWeight(.medium)
                     .accessibilityIdentifier("show-remaining-usage-toggle")
+                    .onChange(of: self.showRemainingUsage) { WidgetDisplayPreferences.mirrorAppSettings() }
             } header: {
                 Text("Usage")
             } footer: {

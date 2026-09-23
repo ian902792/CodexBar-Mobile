@@ -127,6 +127,22 @@ struct WidgetSnapshotBuilderTests {
     }
 
     @Test
+    func `usage window countdowns use compact English units`() {
+        let now = Self.date("2026-06-28T12:00:00Z")
+        func text(_ seconds: TimeInterval) -> String? {
+            CodexBarWidgetUsageWindow.countdownText(until: now.addingTimeInterval(seconds), now: now)
+        }
+        #expect(text(3 * 86400 + 3600 + 30) == "3d 1h")
+        #expect(text(2 * 86400) == "2d")
+        #expect(text(3600 + 49 * 60) == "1h 49m")
+        #expect(text(2 * 3600) == "2h")
+        #expect(text(12 * 60 - 5) == "12m")
+        #expect(text(1) == "1m")
+        #expect(text(0) == nil)
+        #expect(text(-60) == nil)
+    }
+
+    @Test
     func `sums local-cost provider accounts across devices`() {
         let now = Self.date("2026-06-28T12:00:00Z")
         let older = Self.provider(
