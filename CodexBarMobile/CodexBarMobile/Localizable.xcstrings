@@ -3247,6 +3247,15 @@
         }
       }
     },
+    "Add the new Usage Bars widget to see each limit's bar and reset countdown at a glance, on a dark card in your provider's color.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Add the new Usage Bars widget to see each limit's bar and reset countdown at a glance, on a dark card in your provider's color." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "新增「用量条」小组件：在深色卡片上以 Provider 品牌色一眼看到各额度的用量条与重置倒计时。" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "新增「用量條」小工具：在深色卡片上以 Provider 品牌色一眼看到各額度的用量條與重設倒數。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "新しい「使用量バー」ウィジェットで、各上限のバーとリセットまでの時間をプロバイダーの色でひと目で確認できます。" } }
+      }
+    },
     "Added": {
       "localizations": {
         "en": {
@@ -12135,6 +12144,15 @@
             "value": "用量"
           }
         }
+      }
+    },
+    "Usage Bars": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Usage Bars" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "用量条" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "用量條" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "使用量バー" } }
       }
     },
     "Usage Setting": {
@@ -21306,6 +21324,15 @@
             "value": "Provider 規則"
           }
         }
+      }
+    },
+    "Rate-limit bars and reset times for your providers.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Rate-limit bars and reset times for your providers." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "显示各 Provider 的额度用量条与重置时间。" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "顯示各 Provider 的額度用量條與重設時間。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "各プロバイダーの利用上限バーとリセット時刻を表示します。" } }
       }
     },
     "Raw Inputs": {

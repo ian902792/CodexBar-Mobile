@@ -92,6 +92,41 @@ struct WidgetSnapshotBuilderTests {
     }
 
     @Test
+    func `keeps every provider and its rate windows for the usage bars widget`() {
+        let now = Self.date("2026-06-28T12:00:00Z")
+        let reset = now.addingTimeInterval(3600)
+        let windowed = ProviderUsageSnapshot(
+            providerID: "fictional",
+            providerName: "Fictional AI",
+            primary: SyncRateWindow(usedPercent: 12, windowMinutes: 300, resetsAt: reset, resetDescription: nil),
+            secondary: SyncRateWindow(usedPercent: 140, windowMinutes: 10080, resetsAt: nil, resetDescription: nil),
+            accountEmail: nil,
+            loginMethod: nil,
+            statusMessage: nil,
+            isError: false,
+            lastUpdated: now,
+            costSummary: nil)
+        let others = (0..<7).map { index in
+            Self.provider(
+                id: "p\(index)", name: "P\(index)", email: nil, usage: Double(index),
+                todayCost: nil, tokens: nil, updated: now)
+        }
+        let snapshot = SyncedUsageSnapshot(
+            providers: [windowed] + others,
+            syncTimestamp: now,
+            deviceName: "MacBook Pro",
+            deviceID: "device-a")
+
+        let widget = CodexBarWidgetSnapshotBuilder.makeSnapshot(from: [snapshot], now: now)
+
+        #expect(widget.topProviders.count == 8)
+        let windows = widget.topProviders.first { $0.providerID == "fictional" }?.windows
+        #expect(windows?.map(\.label) == [ProviderWindowLabel.fallback(at: 0), ProviderWindowLabel.fallback(at: 1)])
+        #expect(windows?.map(\.usedPercent) == [12, 100])
+        #expect(windows?.first?.resetsAt == reset)
+    }
+
+    @Test
     func `sums local-cost provider accounts across devices`() {
         let now = Self.date("2026-06-28T12:00:00Z")
         let older = Self.provider(
