@@ -2,7 +2,7 @@
 set -euo pipefail
 
 APP_NAME="CodexBar"
-APP_IDENTITY="Developer ID Application: Yuxiao Wang (3TUERHN53E)"
+APP_IDENTITY="${APP_IDENTITY:-Developer ID Application: Yuxiao Wang (3TUERHN53E)}"
 APP_BUNDLE="CodexBar.app"
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 source "$ROOT/version.env"
@@ -24,6 +24,16 @@ verify_distribution_policy() {
     spctl -a -t exec -vv "$app"
   fi
 }
+
+NOTARYTOOL_OPTIONS=(--wait)
+case "${CODEXBAR_NOTARY_S3_ACCELERATION-1}" in
+  0) NOTARYTOOL_OPTIONS+=(--no-s3-acceleration) ;;
+  1) ;;
+  *)
+    echo "CODEXBAR_NOTARY_S3_ACCELERATION must be 0 or 1." >&2
+    exit 1
+    ;;
+esac
 
 if [[ -z "${APP_STORE_CONNECT_KEY_ID:-}" || -z "${APP_STORE_CONNECT_ISSUER_ID:-}" ]]; then
   echo "Missing App Store Connect release settings (key id or issuer id)." >&2
@@ -75,8 +85,7 @@ ARCH_LIST=( ${ARCHES_VALUE} )
 for ARCH in "${ARCH_LIST[@]}"; do
   swift build -c release --arch "$ARCH"
 done
-CODEXBAR_STAGED_APP_PATH="$STAGED_APP_BUNDLE" CODEXBAR_WIDGET_METADATA_MODE=required ARCHES="${ARCHES_VALUE}" \
-  CODEXBAR_SIGNING=identity ./Scripts/package_app.sh release
+APP_IDENTITY="$APP_IDENTITY" CODEXBAR_STAGED_APP_PATH="$STAGED_APP_BUNDLE" CODEXBAR_WIDGET_METADATA_MODE=required ARCHES="${ARCHES_VALUE}" CODEXBAR_SIGNING=identity ./Scripts/package_app.sh release
 APP_BUNDLE="$STAGED_APP_BUNDLE"
 
 ENTITLEMENTS_DIR="$ROOT/.build/entitlements"
@@ -112,7 +121,7 @@ xcrun notarytool submit "$NOTARIZATION_ZIP" \
   --key "$API_KEY_PATH" \
   --key-id "$APP_STORE_CONNECT_KEY_ID" \
   --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
-  --wait
+  "${NOTARYTOOL_OPTIONS[@]}"
 
 echo "Stapling ticket"
 xcrun stapler staple "$APP_BUNDLE"

@@ -217,7 +217,7 @@ final class SyncCoordinator {
         withObservationTracking {
             _ = self.store.snapshots
             _ = self.store.errors
-            _ = self.store.tokenSnapshots
+            _ = self.store.tokenSnapshotPublications
             _ = self.store.credits
             _ = self.settings.iCloudSyncEnabled
             // Multi-account: re-push when the active Codex managed account
@@ -1519,18 +1519,8 @@ final class SyncCoordinator {
         provider: UsageProvider,
         snapshot: UsageSnapshot?) -> SyncElevenLabsCredits?
     {
-        guard provider == .elevenlabs, let e = snapshot?.elevenLabsUsage else { return nil }
-        return SyncElevenLabsCredits(
-            tier: e.tier,
-            characterCount: e.characterCount,
-            characterLimit: e.characterLimit,
-            usedPercent: e.usedPercent,
-            voiceSlotsUsed: e.voiceSlotsUsed,
-            voiceLimit: e.voiceLimit,
-            professionalVoiceSlotsUsed: e.professionalVoiceSlotsUsed,
-            professionalVoiceLimit: e.professionalVoiceLimit,
-            resetsAt: e.resetsAt,
-            updatedAt: e.updatedAt)
+        // Upstream v0.64 migrated this provider to the generic details lane.
+        nil
     }
 
     static func mapDeepgramUsage(
@@ -1557,26 +1547,8 @@ final class SyncCoordinator {
         provider: UsageProvider,
         snapshot: UsageSnapshot?) -> SyncLLMProxyStats?
     {
-        guard provider == .llmproxy, let l = snapshot?.llmProxyUsage else { return nil }
-        let topProviders = l.topProviders.prefix(3).map { p in
-            SyncLLMProxyProviderSummary(
-                name: p.name,
-                requests: p.requests,
-                tokens: p.tokens,
-                approximateCostUSD: p.approximateCostUSD)
-        }
-        return SyncLLMProxyStats(
-            providerCount: l.providerCount,
-            credentialCount: l.credentialCount,
-            activeCredentialCount: l.activeCredentialCount,
-            exhaustedCredentialCount: l.exhaustedCredentialCount,
-            totalRequests: l.totalRequests,
-            totalTokens: l.totalTokens,
-            approximateCostUSD: l.approximateCostUSD,
-            minimumRemainingPercent: l.minimumRemainingPercent,
-            nextResetAt: l.nextResetAt,
-            topProviders: Array(topProviders),
-            updatedAt: l.updatedAt)
+        // Upstream v0.64 migrated this provider to the generic details lane.
+        nil
     }
 
     // MARK: - v0.27 existing-provider extensions (private)
@@ -2114,7 +2086,7 @@ final class SyncCoordinator {
     }
 
     private func makeCostSummary(for provider: UsageProvider) -> SyncCostSummary? {
-        let tokenSnapshot = self.store.tokenSnapshots[provider.instanceID]
+        let tokenSnapshot = self.store.tokenSnapshotPublications[provider.instanceID]?.snapshot
         let fallbackBucketTimeZone = self.settings.costUsageBucketCalendar.timeZone
         let tokenBucketTimeZoneIdentifier = tokenSnapshot?.bucketTimeZoneIdentifier
             ?? Self.costSummaryBucketTimeZoneIdentifier(

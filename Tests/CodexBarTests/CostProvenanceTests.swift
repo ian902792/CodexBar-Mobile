@@ -90,19 +90,21 @@ struct CostProvenanceTests {
     }
 
     @Test
-    func `costless requests count their unclassified remainder as unpriced`() {
-        let entirelyUnpriced = CostUsageDailyReport.Entry(
+    func `day rows with request counts and no cost count the remainder as unpriced`() {
+        let tokenOnly = CostUsageDailyReport.Entry(
             date: "2026-07-16",
             inputTokens: 10,
             outputTokens: 2,
             totalTokens: 12,
-            requestCount: 3,
+            requestCount: 5,
             costUSD: nil,
             modelsUsed: nil,
             modelBreakdowns: nil)
-        #expect(entirelyUnpriced.coverageCounts == CostUsageCoverageCounts(unpriced: 3))
+        #expect(tokenOnly.coverageCounts == CostUsageCoverageCounts(unpriced: 5))
+        #expect(tokenOnly.coverageCounts(detail: .requests) == CostUsageCoverageCounts(unpriced: 5))
+        #expect(tokenOnly.coverageCounts(detail: .rows) == CostUsageCoverageCounts(unpriced: 1))
 
-        let partiallyClassified = CostUsageDailyReport.Entry(
+        let partlyUnmetered = CostUsageDailyReport.Entry(
             date: "2026-07-16",
             inputTokens: 10,
             outputTokens: 2,
@@ -111,13 +113,48 @@ struct CostProvenanceTests {
             costUSD: nil,
             modelsUsed: nil,
             modelBreakdowns: nil,
-            unpricedRequestCount: 1,
-            unmeteredRequestCount: 1,
-            estimatedRequestCount: 1)
-        #expect(partiallyClassified.coverageCounts == CostUsageCoverageCounts(
-            unpriced: 3,
-            unmetered: 1,
-            estimated: 1))
+            unmeteredRequestCount: 2)
+        #expect(partlyUnmetered.coverageCounts == CostUsageCoverageCounts(unpriced: 3, unmetered: 2))
+
+        let priced = CostUsageDailyReport.Entry(
+            date: "2026-07-16",
+            inputTokens: 10,
+            outputTokens: 2,
+            totalTokens: 12,
+            requestCount: 5,
+            costUSD: 1.25,
+            modelsUsed: nil,
+            modelBreakdowns: nil,
+            unmeteredRequestCount: 2)
+        #expect(priced.coverageCounts == CostUsageCoverageCounts(priced: 3, unmetered: 2))
+    }
+
+    @Test(arguments: [nil, 1.25] as [Double?], [nil, 0, 1] as [Int?])
+    func `malformed explicit categories beyond Int.max leave no remainder instead of trapping`(
+        cost: Double?,
+        requestCount: Int?)
+    {
+        let malformed = CostUsageDailyReport.Entry(
+            date: "2026-07-16",
+            inputTokens: 10,
+            outputTokens: 2,
+            totalTokens: 12,
+            requestCount: requestCount,
+            costUSD: cost,
+            modelsUsed: nil,
+            modelBreakdowns: nil,
+            unpricedRequestCount: Int.max,
+            unmeteredRequestCount: Int.max)
+        #expect(malformed.coverageCounts == CostUsageCoverageCounts(unpriced: Int.max, unmetered: Int.max))
+        #expect(malformed.coverageCounts(detail: .requests) == CostUsageCoverageCounts(
+            priced: cost == nil ? 0 : 1,
+            unpriced: cost == nil ? 1 : 0))
+
+        var accumulator = CostUsageCoverageAccumulator()
+        accumulator.add(malformed)
+        #expect(accumulator.counts == CostUsageCoverageCounts(
+            priced: cost == nil ? 0 : 1,
+            unpriced: cost == nil ? 1 : 0))
     }
 
     @Test

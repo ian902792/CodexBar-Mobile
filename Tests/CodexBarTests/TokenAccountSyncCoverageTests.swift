@@ -67,6 +67,8 @@ struct TokenAccountSyncCoverageTests {
             "ibmbob",
             // v0.53.0 addition
             "grok",
+            // v0.59.0-v0.64.1 additions (upstream sync)
+            "huggingface", "replicate", "typesafe",
         ]
         let actual = Set(TokenAccountSupportCatalog.allProviders.map(\.rawValue))
         let added = actual.subtracting(expected)

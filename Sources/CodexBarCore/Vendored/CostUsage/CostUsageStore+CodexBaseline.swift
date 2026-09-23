@@ -25,7 +25,8 @@ extension CostUsageStore {
 
         init(
             snapshot: CostUsageStoreSnapshot,
-            snapshotCounts: [String: Int]? = nil)
+            snapshotCounts: [String: Int]? = nil,
+            rowCounts: [String: Int]? = nil)
         {
             self.metadata = snapshot.metadata
             self.files = snapshot.files.map { file in
@@ -38,7 +39,7 @@ extension CostUsageStore {
             }
             self.snapshotCounts = snapshotCounts
                 ?? snapshot.tokenSnapshots.reduce(into: [:]) { $0[$1.path, default: 0] += 1 }
-            self.rowCounts = snapshot.usageRows.reduce(into: [:]) { $0[$1.path, default: 0] += 1 }
+            self.rowCounts = rowCounts ?? snapshot.usageRows.reduce(into: [:]) { $0[$1.path, default: 0] += 1 }
         }
     }
 
@@ -48,11 +49,19 @@ extension CostUsageStore {
         var stamp: DatabaseStamp
         var unloadedTokenSnapshotPaths: Set<String>
         var tokenSnapshotsLoaded: Bool
+        var hydratedTokenSnapshots: [String: [CostUsageCodexTokenSnapshot]] = [:]
     }
 
     struct RetainedCodexBaseline {
         var id: UUID
         var baseline: CodexDecodedBaseline
+    }
+
+    struct RetainedCodexRead {
+        var decoded: CostUsageCache
+        var persistence: CodexPersistenceState
+        var stamp: DatabaseStamp
+        var purpose: CostUsageStoreReadPurpose
     }
 
     func loadCodexScan(calendar: Calendar) -> CostUsageStoreLoad {
@@ -114,11 +123,7 @@ extension CostUsageStore {
                     loadTokenSnapshots: loadTokenSnapshots,
                     recorder: self.scopedReadWorkRecorderForTesting)
                 #if DEBUG
-                if let checkpoint = Self.codexBaselineReadCheckpointForTesting,
-                   checkpoint.databaseURL == self.databaseURL
-                {
-                    try checkpoint.checkpoint()
-                }
+                try self.runCodexReadCheckpointForTesting()
                 #endif
                 return snapshot
             }
@@ -188,6 +193,14 @@ extension CostUsageStore {
     }
 
     #if DEBUG
+    func runCodexReadCheckpointForTesting() throws {
+        if let checkpoint = Self.codexBaselineReadCheckpointForTesting,
+           checkpoint.databaseURL == self.databaseURL
+        {
+            try checkpoint.checkpoint()
+        }
+    }
+
     nonisolated(unsafe) static var codexBaselineReadCheckpointForTesting: (
         databaseURL: URL,
         checkpoint: () throws -> Void)?

@@ -13,6 +13,51 @@ resolve_package_signing_mode() {
   SIGNING_MODE="$requested"
 }
 
+resolve_package_signing_identity() {
+  if [[ "$SIGNING_MODE" == "adhoc" ]]; then
+    APP_TEAM_ID="${APP_TEAM_ID:-Y5PE65HELJ}"
+    return
+  fi
+
+  local requested="${APP_IDENTITY:-Developer ID Application: Peter Steinberger (Y5PE65HELJ)}"
+  local identities line name hash selected_name="" selected_hash="" matches=0
+  if ! identities=$(security find-identity -p codesigning -v); then
+    echo "ERROR: Unable to list valid code-signing identities." >&2
+    return 1
+  fi
+  local identity_pattern='^[[:space:]]*[[:digit:]]+\)[[:space:]]+([[:xdigit:]]{40})[[:space:]]+"([^"]+)"[[:space:]]*$'
+  local requested_hash
+  requested_hash=$(printf '%s' "$requested" | tr '[:lower:]' '[:upper:]')
+  while IFS= read -r line; do
+    [[ "$line" =~ $identity_pattern ]] || continue
+    hash="${BASH_REMATCH[1]}"
+    name="${BASH_REMATCH[2]}"
+    if [[ "$hash" == "$requested_hash" || "$name" == *"$requested"* ]]; then
+      selected_name="$name"
+      selected_hash="$hash"
+      matches=$((matches + 1))
+    fi
+  done <<<"$identities"
+  if [[ "$matches" != "1" ]]; then
+    echo "ERROR: APP_IDENTITY must match exactly one valid identity (found $matches); use its full name or SHA-1 hash." >&2
+    return 1
+  fi
+  # Developer ID names end in the Team ID; development names may end in a personal ID instead.
+  local team_pattern='^Developer ID Application: .+ \(([A-Z0-9]{10})\)$'
+  if [[ ! "$selected_name" =~ $team_pattern ]]; then
+    echo "ERROR: Cannot derive a Team ID from APP_IDENTITY; use a Developer ID Application identity." >&2
+    return 1
+  fi
+  local team="${BASH_REMATCH[1]}"
+  if [[ -n "${APP_TEAM_ID:-}" && "$APP_TEAM_ID" != "$team" ]]; then
+    echo "ERROR: APP_TEAM_ID does not match the selected signing identity." >&2
+    return 1
+  fi
+  APP_TEAM_ID="$team"
+  # Sign with the same certificate whose team authorized the entitlement selection.
+  CODESIGN_ID="$selected_hash"
+}
+
 verify_no_quarantine_attribute() {
   local bundle="$1"
   local quarantined
@@ -232,10 +277,12 @@ if [[ "$SIGNING_MODE" == "adhoc" ]]; then
   AUTO_CHECKS=false
 fi
 WIDGET_BUNDLE_ID="${BUNDLE_ID}.widget"
-# Our fork's signing team. Upstream uses Y5PE65HELJ (steipete); we override
-# to o1xhack's team ID. APP_TEAM_ID is referenced in CFBundleInfo plist
-# embeds (CodexBarTeamID key) at line ~324 / ~420 — required for app group
-# discovery between the main app and Widget extension.
+# Derive APP_TEAM_ID/CODESIGN_ID from the signing identity that is actually
+# installed (upstream helper). The fork default below only applies when no
+# identity resolution set it. APP_TEAM_ID is referenced in CFBundleInfo plist
+# embeds (CodexBarTeamID key) — required for app group discovery between the
+# main app and Widget extension.
+resolve_package_signing_identity
 APP_TEAM_ID="${APP_TEAM_ID:-3TUERHN53E}"
 APP_GROUP_ID="group.com.o1xhack.codexbar"
 ICLOUD_KVS_ID="${CODEXBAR_ICLOUD_KVS_ID:-3TUERHN53E.com.codexbar.shared}"
@@ -544,8 +591,8 @@ elif [[ "$ALLOW_LLDB" == "1" ]]; then
   CODESIGN_ID="-"
   CODESIGN_ARGS=(--force --sign "$CODESIGN_ID")
 else
-  CODESIGN_ID="${APP_IDENTITY:-Developer ID Application: Yuxiao Wang (3TUERHN53E)}"
-  if [[ "$CODESIGN_ID" == "Apple Development:"* ]]; then
+  # CODESIGN_ID is the SHA-1 resolved by resolve_package_signing_identity.
+  if [[ "${APP_IDENTITY:-}" == "Apple Development:"* ]]; then
     CODESIGN_ARGS=(--force --sign "$CODESIGN_ID")
   else
     CODESIGN_ARGS=(--force --timestamp --options runtime --sign "$CODESIGN_ID")

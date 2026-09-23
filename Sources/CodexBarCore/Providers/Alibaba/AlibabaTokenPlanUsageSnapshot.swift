@@ -1,6 +1,6 @@
 import Foundation
 
-public struct AlibabaTokenPlanUsageSnapshot: Sendable {
+public struct AlibabaTokenPlanUsageSnapshot: Sendable, OneConsoleTokenPlanSnapshot {
     public let planName: String?
     public let usedQuota: Double?
     public let totalQuota: Double?

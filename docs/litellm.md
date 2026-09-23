@@ -36,8 +36,9 @@ available for self-hosted proxies on loopback, RFC 1918, link-local, and IPv6 un
 URL that does not meet these rules is rejected, and the provider reports that `LITELLM_BASE_URL` is invalid
 instead of fetching.
 
-The native fetcher remains authoritative. Configured plugin origins cover HTTPS and loopback HTTP, but do not cover
-the existing private-network and `.local` HTTP contract without a broader host network policy.
+The bundled TypeScript provider runs on both plugin engines and preserves the same configured-origin validation,
+including authenticated private-network and `.local` HTTP. The host attaches the bearer key; the plugin validates
+key, user, and team identity before projecting spend and budgets.
 
 ## Data Source
 
@@ -53,6 +54,9 @@ For user-bound keys, personal usage is shown as the primary window. If the key h
 budget is shown as the secondary window and becomes the automatic menu bar metric because that budget is enforced for
 the key. Team-only keys show that team budget as their sole usage window. Spend remains visible as an API-spend row
 when LiteLLM does not configure a budget.
+
+CLI text/cards and native menus show budget amounts as details, with actual reset dates separately; an absent reset
+never turns the amount into a reset clock.
 
 The virtual key must be allowed to read its own `/key/info` data and the corresponding user or team information
 endpoint. CodexBar validates returned user and team IDs against `/key/info` before displaying usage.

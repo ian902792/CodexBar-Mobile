@@ -64,7 +64,6 @@ public enum UsageProvider: String, CaseIterable, Sendable, Codable {
     case deepseek
     case deepinfra
     case codebuff
-    case crof
     case venice
     case commandcode
     case qoder
@@ -78,6 +77,7 @@ public enum UsageProvider: String, CaseIterable, Sendable, Codable {
     case poe
     case chutes
     case neuralwatt
+    case helmcode
     case clawrouter
     case longcat
     case sub2api
@@ -88,6 +88,14 @@ public enum UsageProvider: String, CaseIterable, Sendable, Codable {
     case xai
     case notion
     case ibmbob
+    case nous
+    case muse
+    case coderabbit
+    case replicate
+    case huggingface
+    case pi
+    case v0
+    case typesafe
 }
 
 // swiftformat:enable sortDeclarations
@@ -118,6 +126,7 @@ public struct IconStyle: RawRepresentable, Hashable, Sendable, CaseIterable, Cus
     public static let antigravity = Self(provider: .antigravity)
     public static let cursor = Self(provider: .cursor)
     public static let factory = Self(provider: .factory)
+    public static let grok = Self(provider: .grok)
     public static let copilot = Self(provider: .copilot)
     public static let commandcode = Self(provider: .commandcode)
     public static let kimi = Self(provider: .kimi)

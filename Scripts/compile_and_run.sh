@@ -5,8 +5,6 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_BUNDLE="${ROOT_DIR}/CodexBar.app"
-STAGED_APP_BUNDLE="${TMPDIR:-/tmp}/codexbar-staged/CodexBar.app"
-INSTALL_APP_BUNDLE="${CODEXBAR_INSTALL_PATH:-}"
 APP_PROCESS_PATTERN="CodexBar.app/Contents/MacOS/CodexBar"
 DEBUG_PROCESS_PATTERN="${ROOT_DIR}/.build/debug/CodexBar"
 RELEASE_PROCESS_PATTERN="${ROOT_DIR}/.build/release/CodexBar"
@@ -67,75 +65,42 @@ has_signing_identity() {
 }
 
 detect_codesigning_identity() {
-  local preferred_prefixes=(
-    "Developer ID Application:"
-    "Apple Development:"
-    "Apple Distribution:"
-  )
-  local prefix
   local identities
   identities="$(security find-identity -p codesigning -v 2>/dev/null || true)"
-  for prefix in "${preferred_prefixes[@]}"; do
-    awk -v prefix="${prefix}" '
-      index($0, "\"" prefix) {
-        sub(/^[^\"]*\"/, "")
-        sub(/\".*$/, "")
+  awk '
+    index($0, "\"Developer ID Application:") {
+      sub(/^[^\"]*\"/, "")
+      sub(/\".*$/, "")
+      if ($0 ~ /\([A-Z0-9]{10}\)$/) {
         print
         exit
       }
-    ' <<<"${identities}"
-  done | sed -n '1p'
-}
-
-export_team_id_from_identity() {
-  local identity="${1:-}"
-  if [[ -n "${APP_TEAM_ID:-}" || -z "${identity}" ]]; then
-    return
-  fi
-  local subject
-  subject="$(security find-certificate -c "${identity}" -p 2>/dev/null \
-    | openssl x509 -noout -subject -nameopt RFC2253 2>/dev/null || true)"
-  if [[ "${subject}" =~ (^|,)OU=([A-Z0-9]{10})(,|$) ]]; then
-    APP_TEAM_ID="${BASH_REMATCH[2]}"
-    export APP_TEAM_ID
-    return
-  fi
-  if [[ "${identity}" =~ \(([A-Z0-9]{10})\)$ ]]; then
-    APP_TEAM_ID="${BASH_REMATCH[1]}"
-    export APP_TEAM_ID
-  fi
+    }
+  ' <<<"${identities}"
 }
 
 resolve_signing_mode() {
   if [[ -n "${SIGNING_MODE}" ]]; then
-    export_team_id_from_identity "${APP_IDENTITY:-}"
     return
   fi
 
   if [[ -n "${APP_IDENTITY:-}" ]]; then
-    if has_signing_identity "${APP_IDENTITY}"; then
-      export_team_id_from_identity "${APP_IDENTITY}"
-      SIGNING_MODE="identity"
-      return
-    fi
-    log "WARN: APP_IDENTITY not found in Keychain; falling back to adhoc signing."
-    SIGNING_MODE="adhoc"
+    # Packaging validates explicit selections; never silently change their signing mode.
+    SIGNING_MODE="identity"
     return
   fi
 
-  # Our fork is signed under o1xhack's Developer ID; upstream's identity is
-  # listed as a last-resort fallback in case a developer has only the
-  # upstream cert installed.
+  # The fork ships under its own Developer ID; upstream's is a fallback for
+  # developers who only have the upstream certificate installed.
   local candidate=""
   for candidate in \
+    "Developer ID Application: Yuxiao Wang (3TUERHN53E)" \
     "Developer ID Application: yuxiao guo" \
-    "Developer ID Application: Peter Steinberger (Y5PE65HELJ)" \
-    "CodexBar Development"
+    "Developer ID Application: Peter Steinberger (Y5PE65HELJ)"
   do
     if has_signing_identity "${candidate}"; then
       APP_IDENTITY="${candidate}"
       export APP_IDENTITY
-      export_team_id_from_identity "${APP_IDENTITY}"
       SIGNING_MODE="identity"
       return
     fi
@@ -145,7 +110,6 @@ resolve_signing_mode() {
   if [[ -n "${candidate}" ]]; then
     APP_IDENTITY="${candidate}"
     export APP_IDENTITY
-    export_team_id_from_identity "${APP_IDENTITY}"
     SIGNING_MODE="identity"
     return
   fi
@@ -280,10 +244,10 @@ kill_claude_probes
 # (adhoc signature changes on every build, making old keychain entries inaccessible)
 if [[ "${SIGNING_MODE:-adhoc}" == "adhoc" && "${CLEAR_ADHOC_KEYCHAIN}" == "1" ]]; then
   log "==> Clearing CodexBar keychain entries (adhoc signing)"
-  # Clear our fork-owned bundle ID keychain entries (note we use com.o1xhack
-  # not com.steipete) when developers explicitly want a clean reset.
-  delete_keychain_service_items "com.o1xhack.CodexBar"
-  delete_keychain_service_items "com.o1xhack.codexbar.cache"
+  # Clear both the legacy keychain store and the current cache service when developers explicitly want a clean reset
+  # of CodexBar-owned keychain state for ad-hoc builds.
+  delete_keychain_service_items "com.steipete.CodexBar"
+  delete_keychain_service_items "com.steipete.codexbar.cache"
 elif [[ "${SIGNING_MODE:-adhoc}" == "adhoc" ]]; then
   log "==> Preserving CodexBar keychain entries (pass --clear-adhoc-keychain to reset adhoc keychain state)"
 fi
@@ -301,9 +265,6 @@ if [[ -n "${RELEASE_ARCHES}" ]]; then
   ARCHES_VALUE="${RELEASE_ARCHES}"
 fi
 PACKAGE_ENV=(
-  CODEXBAR_WIDGET_METADATA_MODE="${CODEXBAR_WIDGET_METADATA_MODE:-skip}"
-  CODEXBAR_STAGED_APP_PATH="${STAGED_APP_BUNDLE}"
-  CODEXBAR_INSTALL_PATH="${INSTALL_APP_BUNDLE}"
   ARCHES="${ARCHES_VALUE}"
 )
 if [[ "${DEBUG_LLDB}" == "1" ]]; then
@@ -317,17 +278,10 @@ else
 fi
 
 # 4) Launch the packaged app.
-LAUNCH_BUNDLE="${APP_BUNDLE}"
-if [[ -d "${STAGED_APP_BUNDLE}" ]]; then
-  LAUNCH_BUNDLE="${STAGED_APP_BUNDLE}"
-elif [[ -n "${INSTALL_APP_BUNDLE}" && -d "${INSTALL_APP_BUNDLE}" ]]; then
-  LAUNCH_BUNDLE="${INSTALL_APP_BUNDLE}"
-fi
-
 log "==> launch app"
-if ! open "${LAUNCH_BUNDLE}"; then
+if ! open "${APP_BUNDLE}"; then
   log "WARN: launch app returned non-zero; falling back to direct binary launch."
-  "${LAUNCH_BUNDLE}/Contents/MacOS/CodexBar" >/dev/null 2>&1 &
+  "${APP_BUNDLE}/Contents/MacOS/CodexBar" >/dev/null 2>&1 &
   disown
 fi
 
