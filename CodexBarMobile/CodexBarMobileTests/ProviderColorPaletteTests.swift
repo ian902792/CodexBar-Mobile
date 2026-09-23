@@ -526,6 +526,42 @@ struct ProviderColorPaletteTests {
     }
 }
 
+@Suite("Provider color dark-mode contrast")
+struct ProviderColorContrastTests {
+    private func resolved(_ color: Color, _ style: UIUserInterfaceStyle) -> UIColor {
+        UIColor(color).resolvedColor(with: UITraitCollection(userInterfaceStyle: style))
+    }
+
+    private func luminance(_ color: UIColor) -> CGFloat {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        color.getRed(&r, green: &g, blue: &b, alpha: &a)
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b
+    }
+
+    @Test
+    func `Near-black provider tints are lifted to a readable shade in dark mode`() {
+        for id in ["grok", "xai", "zed"] {
+            let color = ProviderColorPalette.color(for: id)
+            #expect(self.luminance(self.resolved(color, .dark)) >= 0.34)
+            #expect(self.luminance(self.resolved(color, .light)) < 0.3)
+        }
+    }
+
+    @Test
+    func `Synced black icon tint is lifted in dark mode`() {
+        let color = ProviderColorPalette.readable(.black)
+        #expect(self.luminance(self.resolved(color, .dark)) >= 0.34)
+    }
+
+    @Test
+    func `Bright tints are unchanged in dark mode`() {
+        let claude = ProviderColorPalette.color(for: "claude")
+        let dark = self.resolved(claude, .dark)
+        let light = self.resolved(claude, .light)
+        #expect(dark.isApproximately(light))
+    }
+}
+
 // MARK: - Test helpers
 
 extension UIColor {

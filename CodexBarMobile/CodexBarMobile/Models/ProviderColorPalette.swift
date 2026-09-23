@@ -18,9 +18,37 @@ enum ProviderColorPalette {
         if let tint = provider.providerIconTintHex,
            let color = self.color(fromHex: tint)
         {
-            return color
+            return self.readable(color)
         }
         return self.color(for: provider.providerID)
+    }
+
+    /// Minimum relative luminance a tint may have in dark mode. Near-black
+    /// brand colors (Grok #000000/#1A1A1A, xAI, Zed) otherwise render as
+    /// black text and bars on dark cards.
+    static let minimumDarkModeLuminance: CGFloat = 0.35
+
+    /// Wraps a tint so dark mode lifts it toward white until it reaches
+    /// `minimumDarkModeLuminance`; light mode keeps the brand color as-is.
+    static func readable(_ color: Color) -> Color {
+        let base = UIColor(color)
+        return Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark ? self.lifted(base) : base
+        })
+    }
+
+    static func lifted(_ color: UIColor) -> UIColor {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        color.getRed(&r, green: &g, blue: &b, alpha: &a)
+        let luminance = { (t: CGFloat) in
+            0.2126 * (r + (1 - r) * t) + 0.7152 * (g + (1 - g) * t) + 0.0722 * (b + (1 - b) * t)
+        }
+        let current = luminance(0)
+        guard current < self.minimumDarkModeLuminance else { return color }
+        // Luminance (gamma-space approximation) is linear in the blend factor.
+        let t = (self.minimumDarkModeLuminance - current) / (1 - current)
+        return UIColor(
+            red: r + (1 - r) * t, green: g + (1 - g) * t, blue: b + (1 - b) * t, alpha: a)
     }
 
     private static func color(fromHex value: String) -> Color? {
@@ -39,6 +67,10 @@ enum ProviderColorPalette {
     /// so we don't accidentally collapse two distinct providers back into the
     /// same color.
     static func color(for providerIdentifier: String) -> Color {
+        self.readable(self.brandColor(for: providerIdentifier))
+    }
+
+    private static func brandColor(for providerIdentifier: String) -> Color {
         let normalized = providerIdentifier
             .lowercased()
             .replacingOccurrences(of: " ", with: "")
