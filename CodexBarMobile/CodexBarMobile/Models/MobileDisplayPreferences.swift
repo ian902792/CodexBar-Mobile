@@ -89,13 +89,13 @@ enum UsagePercentDisplayMode: String, CaseIterable, Identifiable {
 
 extension WidgetDisplayPreferences {
     /// Mirrors the app's "Show remaining usage" setting (including the legacy
-    /// display-mode key) into the App Group and reloads widgets when it changed.
+    /// display-mode key) into the App Group and reloads widgets. Reloads even
+    /// when the value is unchanged: a timeline built before the first mirror
+    /// (e.g. right after install) would otherwise keep the old mode.
     static func mirrorAppSettings(from defaults: UserDefaults = .standard) {
-        let showRemaining = defaults.object(forKey: MobileSettingsKeys.showRemainingUsage) as? Bool
+        self.showRemainingUsage = defaults.object(forKey: MobileSettingsKeys.showRemainingUsage) as? Bool
             ?? (defaults.string(forKey: MobileSettingsKeys.usagePercentDisplayMode)
                 == UsagePercentDisplayMode.remaining.rawValue)
-        guard showRemaining != self.showRemainingUsage else { return }
-        self.showRemainingUsage = showRemaining
         WidgetCenter.shared.reloadAllTimelines()
     }
 }
