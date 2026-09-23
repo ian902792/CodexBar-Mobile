@@ -12,10 +12,12 @@ All notable changes to the CodexBar iOS companion app will be documented in this
 - Preserve token availability in the local daily ledger independently of cost availability.
 
 ### Changed
+- New pixel-art app icon (`>_` prompt over a usage bar, black field) on iOS and Mac. The Mac `.icns` is rendered through Icon Composer again so macOS 26+ applies the system squircle instead of framing the icon in a gray plate.
 - Move Codex Service Mix from the global Cost dashboard to Codex details.
 - Refresh Classic and Vibe share cards with clearer hierarchy and replace the stacked segmented controls with compact template, range, and provider selectors. The iPad editor shows the preview and controls side by side.
 
 ### Fixed
+- Lift near-black provider tints (Grok, xAI, Zed, synced `#000000` icon tints) to a minimum luminance in Dark Mode so percentages and bars stay readable on dark cards; Light Mode colors are unchanged.
 - Dismiss provider search before opening details and measure adaptive layout independently of keyboard occlusion. Verify compact-phone navigation, bottom content clearance, and iPad selection across rotation in the running app.
 
 ## [1.24.0 (199)] — 2026-09-10

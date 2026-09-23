@@ -2004,6 +2004,15 @@
         "zh-Hant": { "stringUnit": { "state": "translated", "value": "剩餘獎勵額度" } }
       }
     },
+    "Low-contrast provider colors, like Grok's, are now easy to read in Dark Mode, and the app has a new pixel-art icon.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Low-contrast provider colors, like Grok's, are now easy to read in Dark Mode, and the app has a new pixel-art icon." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "Grok 等深色 Provider 的颜色在深色模式下更清晰易读，App 也换上了新的像素风图标。" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "Grok 等深色 Provider 的顏色在深色模式下更清楚易讀，App 也換上了新的像素風圖示。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Grok など暗い色のプロバイダーもダークモードで読みやすくなり、アプリアイコンが新しいピクセルアートになりました。" } }
+      }
+    },
     "Lower bound": {
       "extractionState": "manual",
       "localizations": {
