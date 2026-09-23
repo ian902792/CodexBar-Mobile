@@ -298,7 +298,7 @@ struct ProviderArchitectureGatekeeperTests {
         // Anchors are absolute line numbers, so any edit that inserts or removes a line under
         // Sources/ — including a lint suppression comment — must replay the catalog and re-pin.
         // No new provider, occurrence, or relative fingerprint beyond this pinned set is accepted.
-        let expectedForkDriftFingerprint: UInt64 = 14_703_077_984_034_973_838
+        let expectedForkDriftFingerprint: UInt64 = 5_495_073_895_418_877_685
         #expect(
             failures.isEmpty ||
                 (sortedFailures.count == expectedForkDriftCount &&

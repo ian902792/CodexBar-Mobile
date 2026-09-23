@@ -85,6 +85,12 @@ struct MobilePane: View {
 
                 Spacer(minLength: 0)
             }
+            // Every other pane is a SwiftUI `Form`, which supplies the standard
+            // macOS settings insets. This one is a bare ScrollView, so it has to
+            // match them itself or the content sits flush against the sidebar.
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
