@@ -2,7 +2,7 @@
 set -euo pipefail
 
 APP_NAME="CodexBar"
-APP_IDENTITY="${APP_IDENTITY:-Developer ID Application: Yuxiao Wang (3TUERHN53E)}"
+APP_IDENTITY="${APP_IDENTITY:-Developer ID Application: CHENG YEN YU (RQCATSZF69)}"
 APP_BUNDLE="CodexBar.app"
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 source "$ROOT/version.env"

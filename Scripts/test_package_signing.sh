@@ -89,7 +89,7 @@ import tempfile
 from pathlib import Path
 
 source = Path(sys.argv[1]).read_text()
-start = source.index('BUNDLE_ID="com.o1xhack.codexbar"')
+start = source.index('BUNDLE_ID="com.ian902792.codexbar"')
 end = source.index('BUILD_TIMESTAMP=', start)
 generation = source[start:end]
 start = source.index('PROVISION_PROFILE="$ROOT/Provisioning/CodexBar_Dev.provisionprofile"')
@@ -118,8 +118,8 @@ for configuration, signing, profile_present, allow_lldb in itertools.product(
         upstream = root / 'Scripts/profiles/CodexBar-DeveloperID.provisionprofile'
         upstream.parent.mkdir(parents=True)
         upstream.write_text('incompatible upstream profile marker\n')
-        app_identity = 'Developer ID Application: Fixture (3TUERHN53E)'
-        env = dict(os.environ, ROOT=str(root), APP=str(app), APP_TEAM_ID='3TUERHN53E',
+        app_identity = 'Developer ID Application: Fixture (RQCATSZF69)'
+        env = dict(os.environ, ROOT=str(root), APP=str(app), APP_TEAM_ID='RQCATSZF69',
                    CONF=configuration, LOWER_CONF=configuration, SIGNING_MODE=signing,
                    ALLOW_LLDB=allow_lldb, APP_IDENTITY=app_identity)
         identity_stub = f'security() {{ echo \'  1) {"A" * 40} "{app_identity}"\'; }}'
@@ -135,10 +135,10 @@ for configuration, signing, profile_present, allow_lldb in itertools.product(
         widget_entitlements = plistlib.loads((root / '.build/entitlements/CodexBarWidget.entitlements').read_bytes())
         cloudkit = signing == 'identity'
         if cloudkit:
-            assert app_entitlements['com.apple.developer.team-identifier'] == '3TUERHN53E'
+            assert app_entitlements['com.apple.developer.team-identifier'] == 'RQCATSZF69'
             assert app_entitlements['com.apple.developer.icloud-container-environment'] == 'Production'
-            assert app_entitlements['com.apple.developer.icloud-container-identifiers'] == ['iCloud.com.o1xhack.codexbar']
-            assert app_entitlements['com.apple.security.application-groups'][0].startswith('group.com.o1xhack.codexbar')
+            assert app_entitlements['com.apple.developer.icloud-container-identifiers'] == ['iCloud.com.ian902792.codexbar']
+            assert app_entitlements['com.apple.security.application-groups'][0].startswith('group.com.ian902792.codexbar')
         else:
             assert 'com.apple.developer.icloud-services' not in app_entitlements
         assert widget_entitlements['com.apple.security.app-sandbox'] is True
@@ -202,16 +202,17 @@ with tempfile.TemporaryDirectory(prefix='codexbar-identity-test-') as directory:
         app_entitlements = plistlib.loads(app_path.read_bytes())
         widget_entitlements = plistlib.loads((app_path.parent / 'CodexBarWidget.entitlements').read_bytes())
         suffix = '.debug' if configuration == 'debug' else ''
-        # The fork's entitlements stay bound to its own team/containers no matter
-        # which Developer ID certificate resolves CODESIGN_ID.
-        expected_group = [f'group.com.o1xhack.codexbar{suffix}']
+        # App-identifier, team-identifier and the KVS store follow the team that
+        # resolved CODESIGN_ID; the bundle, app group and CloudKit container are
+        # fork-owned and stay fixed.
+        expected_group = [f'group.com.ian902792.codexbar{suffix}']
         expected_app = {
-            'com.apple.application-identifier': f'3TUERHN53E.com.o1xhack.codexbar{suffix}',
-            'com.apple.developer.team-identifier': '3TUERHN53E',
+            'com.apple.application-identifier': f'{expected_team}.com.ian902792.codexbar{suffix}',
+            'com.apple.developer.team-identifier': expected_team,
             'com.apple.security.application-groups': expected_group,
-            'com.apple.developer.ubiquity-kvstore-identifier': '3TUERHN53E.com.codexbar.shared',
+            'com.apple.developer.ubiquity-kvstore-identifier': f'{expected_team}.com.codexbar.shared',
             'com.apple.developer.icloud-services': ['CloudKit'],
-            'com.apple.developer.icloud-container-identifiers': ['iCloud.com.o1xhack.codexbar'],
+            'com.apple.developer.icloud-container-identifiers': ['iCloud.com.ian902792.codexbar'],
             'com.apple.developer.icloud-container-environment': 'Production',
         }
         if lldb == '1':
@@ -236,7 +237,7 @@ with tempfile.TemporaryDirectory(prefix='codexbar-release-identity-test-') as di
             env['APP_IDENTITY'] = identity
         result = subprocess.run(['bash', '-eu', '-c', identity_assignment + '\n' + package_call],
                                 cwd=root, env=env, capture_output=True, text=True)
-        expected = identity or 'Developer ID Application: Yuxiao Wang (3TUERHN53E)'
+        expected = identity or 'Developer ID Application: CHENG YEN YU (RQCATSZF69)'
         assert result.returncode == 0 and result.stdout == expected, result
 print('2 release identity forwarding cases passed without signing or notarization.')
 

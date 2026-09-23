@@ -15,11 +15,11 @@ resolve_package_signing_mode() {
 
 resolve_package_signing_identity() {
   if [[ "$SIGNING_MODE" == "adhoc" ]]; then
-    APP_TEAM_ID="${APP_TEAM_ID:-Y5PE65HELJ}"
+    APP_TEAM_ID="${APP_TEAM_ID:-RQCATSZF69}"
     return
   fi
 
-  local requested="${APP_IDENTITY:-Developer ID Application: Peter Steinberger (Y5PE65HELJ)}"
+  local requested="${APP_IDENTITY:-Developer ID Application: CHENG YEN YU (RQCATSZF69)}"
   local identities line name hash selected_name="" selected_hash="" matches=0
   if ! identities=$(security find-identity -p codesigning -v); then
     echo "ERROR: Unable to list valid code-signing identities." >&2
@@ -263,12 +263,12 @@ if [[ -f "$ICON_SOURCE" ]]; then
   iconutil --convert icns --output "$ICON_TARGET" "$ICON_SOURCE"
 fi
 
-BUNDLE_ID="com.o1xhack.codexbar"
+BUNDLE_ID="com.ian902792.codexbar"
 RELEASE_BRANCH="${CODEXBAR_RELEASE_BRANCH:-mobile-dev}"
 FEED_URL="https://raw.githubusercontent.com/o1xhack/CodexBar-Mobile/${RELEASE_BRANCH}/appcast.xml"
 AUTO_CHECKS=true
 if [[ "$LOWER_CONF" == "debug" ]]; then
-  BUNDLE_ID="com.o1xhack.codexbar.debug"
+  BUNDLE_ID="com.ian902792.codexbar.debug"
   FEED_URL=""
   AUTO_CHECKS=false
 fi
@@ -283,12 +283,12 @@ WIDGET_BUNDLE_ID="${BUNDLE_ID}.widget"
 # embeds (CodexBarTeamID key) — required for app group discovery between the
 # main app and Widget extension.
 resolve_package_signing_identity
-APP_TEAM_ID="${APP_TEAM_ID:-3TUERHN53E}"
-APP_GROUP_ID="group.com.o1xhack.codexbar"
-ICLOUD_KVS_ID="${CODEXBAR_ICLOUD_KVS_ID:-3TUERHN53E.com.codexbar.shared}"
+APP_TEAM_ID="${APP_TEAM_ID:-RQCATSZF69}"
+APP_GROUP_ID="group.com.ian902792.codexbar"
+ICLOUD_KVS_ID="${CODEXBAR_ICLOUD_KVS_ID:-${APP_TEAM_ID}.com.codexbar.shared}"
 INCLUDE_SHARED_ENTITLEMENTS=1
 if [[ "$BUNDLE_ID" == *".debug"* ]]; then
-  APP_GROUP_ID="group.com.o1xhack.codexbar.debug"
+  APP_GROUP_ID="group.com.ian902792.codexbar.debug"
 fi
 if [[ "$SIGNING_MODE" == "adhoc" ]]; then
   INCLUDE_SHARED_ENTITLEMENTS=0
@@ -306,7 +306,7 @@ NEEDS_GET_TASK_ALLOW=0
 if [[ "$ALLOW_LLDB" == "1" ]]; then
   NEEDS_GET_TASK_ALLOW=1
 elif [[ "$SIGNING_MODE" != "adhoc" ]]; then
-  _EFFECTIVE_ID="${APP_IDENTITY:-Developer ID Application: Yuxiao Wang (3TUERHN53E)}"
+  _EFFECTIVE_ID="${APP_IDENTITY:-Developer ID Application: CHENG YEN YU (RQCATSZF69)}"
   if [[ "$_EFFECTIVE_ID" == "Apple Development:"* ]]; then
     NEEDS_GET_TASK_ALLOW=1
   fi
@@ -318,9 +318,9 @@ cat > "$APP_ENTITLEMENTS" <<PLIST
 <dict>
     $(if [[ "$INCLUDE_SHARED_ENTITLEMENTS" == "1" ]]; then cat <<EOF
 <key>com.apple.application-identifier</key>
-    <string>3TUERHN53E.${BUNDLE_ID}</string>
+    <string>${APP_TEAM_ID}.${BUNDLE_ID}</string>
     <key>com.apple.developer.team-identifier</key>
-    <string>3TUERHN53E</string>
+    <string>${APP_TEAM_ID}</string>
     <key>com.apple.security.application-groups</key>
     <array>
         <string>${APP_GROUP_ID}</string>
@@ -333,7 +333,7 @@ cat > "$APP_ENTITLEMENTS" <<PLIST
     </array>
     <key>com.apple.developer.icloud-container-identifiers</key>
     <array>
-        <string>iCloud.com.o1xhack.codexbar</string>
+        <string>iCloud.com.ian902792.codexbar</string>
     </array>
     <key>com.apple.developer.icloud-container-environment</key>
     <string>Production</string>

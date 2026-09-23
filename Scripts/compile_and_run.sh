@@ -94,7 +94,7 @@ resolve_signing_mode() {
   # developers who only have the upstream certificate installed.
   local candidate=""
   for candidate in \
-    "Developer ID Application: Yuxiao Wang (3TUERHN53E)" \
+    "Developer ID Application: CHENG YEN YU (RQCATSZF69)" \
     "Developer ID Application: yuxiao guo" \
     "Developer ID Application: Peter Steinberger (Y5PE65HELJ)"
   do
