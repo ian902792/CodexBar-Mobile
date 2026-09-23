@@ -25,32 +25,49 @@ enum ProviderColorPalette {
         return self.color(for: providerID)
     }
 
-    /// Minimum relative luminance a tint may have in dark mode. Near-black
-    /// brand colors (Grok #000000/#1A1A1A, xAI, Zed) otherwise render as
-    /// black text and bars on dark cards.
-    static let minimumDarkModeLuminance: CGFloat = 0.35
+    /// Minimum WCAG relative luminance a tint may have in dark mode — about
+    /// 4:1 contrast against the dark card background (#1C1C1E). Near-black
+    /// and deep brand colors (Grok #000000/#1A1A1A, xAI, Zed, Windsurf navy)
+    /// otherwise render as unreadable text and bars on dark cards.
+    static let minimumDarkModeLuminance: CGFloat = 0.2
 
     /// Wraps a tint so dark mode lifts it toward white until it reaches
     /// `minimumDarkModeLuminance`; light mode keeps the brand color as-is.
     static func readable(_ color: Color) -> Color {
         let base = UIColor(color)
         return Color(UIColor { traits in
-            traits.userInterfaceStyle == .dark ? self.lifted(base) : base
+            let resolved = base.resolvedColor(with: traits)
+            return traits.userInterfaceStyle == .dark ? self.lifted(resolved) : resolved
         })
     }
 
     static func lifted(_ color: UIColor) -> UIColor {
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
         color.getRed(&r, green: &g, blue: &b, alpha: &a)
-        let luminance = { (t: CGFloat) in
-            0.2126 * (r + (1 - r) * t) + 0.7152 * (g + (1 - g) * t) + 0.0722 * (b + (1 - b) * t)
+        let blended = { (t: CGFloat) in (r + (1 - r) * t, g + (1 - g) * t, b + (1 - b) * t) }
+        let luminanceAt = { (t: CGFloat) in
+            let (br, bg, bb) = blended(t)
+            return self.relativeLuminance(red: br, green: bg, blue: bb)
         }
-        let current = luminance(0)
-        guard current < self.minimumDarkModeLuminance else { return color }
-        // Luminance (gamma-space approximation) is linear in the blend factor.
-        let t = (self.minimumDarkModeLuminance - current) / (1 - current)
-        return UIColor(
-            red: r + (1 - r) * t, green: g + (1 - g) * t, blue: b + (1 - b) * t, alpha: a)
+        guard luminanceAt(0) < self.minimumDarkModeLuminance else { return color }
+        // Luminance rises monotonically with the blend; bisect for the
+        // smallest lift that reaches the minimum.
+        var low: CGFloat = 0, high: CGFloat = 1
+        for _ in 0..<20 {
+            let mid = (low + high) / 2
+            if luminanceAt(mid) < self.minimumDarkModeLuminance { low = mid } else { high = mid }
+        }
+        let (lr, lg, lb) = blended(high)
+        return UIColor(red: lr, green: lg, blue: lb, alpha: a)
+    }
+
+    /// WCAG 2 relative luminance of sRGB components.
+    static func relativeLuminance(red: CGFloat, green: CGFloat, blue: CGFloat) -> CGFloat {
+        func linear(_ component: CGFloat) -> CGFloat {
+            let c = min(max(component, 0), 1)
+            return c <= 0.04045 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4)
+        }
+        return 0.2126 * linear(red) + 0.7152 * linear(green) + 0.0722 * linear(blue)
     }
 
     private static func color(fromHex value: String) -> Color? {

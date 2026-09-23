@@ -535,22 +535,22 @@ struct ProviderColorContrastTests {
     private func luminance(_ color: UIColor) -> CGFloat {
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
         color.getRed(&r, green: &g, blue: &b, alpha: &a)
-        return 0.2126 * r + 0.7152 * g + 0.0722 * b
+        return ProviderColorPalette.relativeLuminance(red: r, green: g, blue: b)
     }
 
     @Test
     func `Near-black provider tints are lifted to a readable shade in dark mode`() {
-        for id in ["grok", "xai", "zed"] {
+        for id in ["grok", "xai", "zed", "windsurf"] {
             let color = ProviderColorPalette.color(for: id)
-            #expect(self.luminance(self.resolved(color, .dark)) >= 0.34)
-            #expect(self.luminance(self.resolved(color, .light)) < 0.3)
+            #expect(self.luminance(self.resolved(color, .dark)) >= 0.199)
+            #expect(self.luminance(self.resolved(color, .light)) < 0.05)
         }
     }
 
     @Test
     func `Synced black icon tint is lifted in dark mode`() {
         let color = ProviderColorPalette.readable(.black)
-        #expect(self.luminance(self.resolved(color, .dark)) >= 0.34)
+        #expect(self.luminance(self.resolved(color, .dark)) >= 0.199)
     }
 
     @Test
@@ -572,9 +572,13 @@ extension UIColor {
         var lhsB: CGFloat = 0; var lhsA: CGFloat = 0
         var rhsR: CGFloat = 0; var rhsG: CGFloat = 0
         var rhsB: CGFloat = 0; var rhsA: CGFloat = 0
+        // Brand pins are light-mode values; dark mode may lift them
+        // (ProviderColorPalette.readable), so resolve independent of the
+        // simulator's appearance.
+        let light = UITraitCollection(userInterfaceStyle: .light)
         guard
-            getRed(&lhsR, green: &lhsG, blue: &lhsB, alpha: &lhsA),
-            other.getRed(&rhsR, green: &rhsG, blue: &rhsB, alpha: &rhsA)
+            resolvedColor(with: light).getRed(&lhsR, green: &lhsG, blue: &lhsB, alpha: &lhsA),
+            other.resolvedColor(with: light).getRed(&rhsR, green: &rhsG, blue: &rhsB, alpha: &rhsA)
         else {
             return false
         }
