@@ -59,6 +59,13 @@ used percentage, and a live "resets in" countdown. The existing
 - Reset countdown uses `Text(date, style: .relative)`, which ticks without
   extra timeline entries.
 
+### Revision (user feedback, 2026-09-23)
+
+- Windows keep their synced order; the small widget's headline is the first window (Session), not the fullest one.
+- Values follow the app's "Show remaining usage" setting. The app mirrors it into the new App Group `group.com.ian902792.codexbar.mobile` on launch and on toggle, then reloads widget timelines.
+- Countdowns use compact English units (`3d 1h`, `1h 49m`, `12m`) so Chinese relative text is no longer truncated; the timeline carries one entry per minute until the next fetch.
+- Medium: each bar has its own label, value and right-aligned countdown instead of a combined `80% / 11%`.
+
 ### Out of scope
 
 Lock-screen accessory families, large/extra-large layouts, per-window

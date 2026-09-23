@@ -14,6 +14,18 @@ struct CodexBarWidgetUsageWindow: Codable, Equatable, Sendable {
     let label: String
     let usedPercent: Double
     let resetsAt: Date?
+
+    /// Compact English countdown ("3d 1h", "1h 49m", "12m") that fits narrow widgets in any
+    /// language. Nil once the reset has passed, so a stale value never counts up.
+    static func countdownText(until date: Date, now: Date) -> String? {
+        let seconds = date.timeIntervalSince(now)
+        guard seconds > 0 else { return nil }
+        let minutes = Int((seconds / 60).rounded(.up))
+        let days = minutes / 1440, hours = minutes % 1440 / 60, mins = minutes % 60
+        if days > 0 { return hours > 0 ? "\(days)d \(hours)h" : "\(days)d" }
+        if hours > 0 { return mins > 0 ? "\(hours)h \(mins)m" : "\(hours)h" }
+        return "\(mins)m"
+    }
 }
 
 struct CodexBarWidgetProviderSummary: Codable, Equatable, Identifiable, Sendable {

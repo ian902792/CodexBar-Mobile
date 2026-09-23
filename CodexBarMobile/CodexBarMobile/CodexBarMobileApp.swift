@@ -9,6 +9,7 @@ import UserNotifications
 struct CodexBarMobileApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var usageData: SyncedUsageData
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         let arguments = ProcessInfo.processInfo.arguments
@@ -42,6 +43,11 @@ struct CodexBarMobileApp: App {
                 .onAppear {
                     guard !ProcessInfo.processInfo.arguments.contains("UI_TEST_PREVIEW_DATA") else { return }
                     usageData.startObserving()
+                }
+                .onChange(of: self.scenePhase, initial: true) { _, phase in
+                    // Widgets render without the app, so hand them the current settings
+                    // every time the app comes forward.
+                    if phase == .active { WidgetDisplayPreferences.mirrorAppSettings() }
                 }
         }
         // P2a: attach SwiftData container. Views do not yet use @Query;
